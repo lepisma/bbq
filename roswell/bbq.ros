@@ -9,4 +9,4 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (print argv))
+  (bbq::do-things))
