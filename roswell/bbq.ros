@@ -9,4 +9,7 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (bbq::basic (or (car argv) "")))
+  (let ((query (car argv)))
+    (if (or (not query) (string-equal query ""))
+        (bbq::mpc-clear-play-all)
+        (bbq::mpc-clear-play (bbq::search-basic query)))))
