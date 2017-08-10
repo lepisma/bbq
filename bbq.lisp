@@ -17,16 +17,10 @@
 
 (defun mpc-add (items)
   "Add items to the playlist"
-  (mapc (lambda (item) (inferior-shell:run/ss `(mpc add ,item))) items))
+  (inferior-shell:run/ss `(mpc add ,@items)))
 
 (defun mpc-clear-play (items)
   "Clear playlist. Add items and play."
   (inferior-shell:run/ss '(mpc clear))
   (mpc-add items)
-  (inferior-shell:run/ss '(mpc play)))
-
-(defun mpc-clear-play-all ()
-  "Play all items"
-  (inferior-shell:run/ss '(mpc clear))
-  (inferior-shell:run/ss "mpc ls | mpc add")
   (inferior-shell:run/ss '(mpc play)))
