@@ -6,8 +6,17 @@
           search-items
           new-items))
 
-(defvar *music-dir* "/media/lepisma/Data/Music/")
-(defvar *beets-db* "/media/lepisma/Data/Music/beets.db")
+(defvar *config-path* #p"~/.bbq")
+
+(defvar *music-dir* nil
+  "Path to music directory")
+(defvar *beets-db* nil
+  "Path to beets sqlite database")
+
+(with-open-file (fp *config-path*)
+  (let ((config (read fp)))
+    (setf *music-dir* (cdr (assoc 'music-dir config))
+          *beets-db* (cdr (assoc 'beets-db config)))))
 
 (defun search-items (query)
   "Simple search across album, artist and title"
@@ -28,7 +37,6 @@
 
 (defun mpc-add-items (items)
   "Add items to the playlist"
-  (mapcar #'print items)
   (inferior-shell:run/ss `(mpc add ,@items)))
 
 (defun mpc-clear-play (items)
