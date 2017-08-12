@@ -2,8 +2,7 @@
 
 (in-package #:bbq)
 
-(export '(init
-          mpc-clear-play
+(export '(mpc-clear-play
           search-items
           new-items
           artist-cap-items))
