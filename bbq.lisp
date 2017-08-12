@@ -2,9 +2,11 @@
 
 (in-package #:bbq)
 
-(export '(mpc-clear-play
+(export '(init
+          mpc-clear-play
           search-items
-          new-items))
+          new-items
+          artist-cap-items))
 
 (defvar *config-path* #p"~/.bbq")
 
@@ -32,6 +34,13 @@
 (defun new-items (n)
   "Return n new items"
   (let* ((stmt (format nil "SELECT substr(path, ~A) FROM items ORDER BY mtime DESC LIMIT ~A" (+ 1 (length *music-dir*)) n))
+         (results (inferior-shell:run/ss `(sqlite3 ,*beets-db* ,stmt))))
+    (cl-strings:split results #\Linefeed)))
+
+(defun artist-cap-items (n)
+  "Return items with 'artist items' <= n"
+  (let* ((stmt (format nil "SELECT substr(path, ~A) FROM items WHERE artist IN (SELECT artist FROM items GROUP BY artist HAVING count(*) <= ~A)"
+                       (+ 1 (length *music-dir*)) n))
          (results (inferior-shell:run/ss `(sqlite3 ,*beets-db* ,stmt))))
     (cl-strings:split results #\Linefeed)))
 
