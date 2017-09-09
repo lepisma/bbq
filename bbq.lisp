@@ -22,6 +22,8 @@
   (setf *mpm-db* (pathname (gethash "database" mpm-config)))
   (setf *mpm-player-url* (format nil "http://127.0.0.1:~A" (gethash "port" (gethash "player" mpm-config)))))
 
+(setf *random-state* (make-random-state t))
+
 (defun search-items (query)
   "Simple search across album, artist and title"
   (let ((fields '("album" "artist" "title")))
@@ -54,11 +56,11 @@
         (dex:get base-url))))
 
 (defun mpm-player-add-items (items)
-  "Add items to the playlist"
+  "Add items to the playlist after shuffling"
   (mpm-player-request "add" (format nil "ids=~A" (cl-strings:join items :separator ","))))
 
 (defun mpm-player-clear-play (items)
   "Clear playlist. Add items and play."
   (mpm-player-request "clear")
-  (mpm-player-add-items items)
+  (mpm-player-add-items (sort items (lambda (x y) (zerop (random 2)))))
   (mpm-player-request "next"))
