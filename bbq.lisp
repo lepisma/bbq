@@ -9,9 +9,6 @@
 
 (defvar *config-path* #p"~/.bbq")
 
-(defvar *music-dir* nil
-  "Path to music directory")
-
 (defvar *mpm-db* nil
   "Path to mpm sqlite database")
 
@@ -20,8 +17,7 @@
 
 (with-open-file (fp *config-path*)
   (let ((config (read fp)))
-    (setf *music-dir* (cdr (assoc 'music-dir config))
-          *mpm-db* (cdr (assoc 'mpm-db config)))))
+    (setf *mpm-db* (cdr (assoc 'mpm-db config)))))
 
 (defun search-items (query)
   "Simple search across album, artist and title"
