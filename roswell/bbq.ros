@@ -13,4 +13,4 @@ exec ros -Q -- $0 "$@"
     (let ((items (cond ((string-equal cmd "new") (bbq:new-items (parse-integer (second argv))))
                        ((string-equal cmd "cap") (bbq:artist-cap-items (parse-integer (second argv))))
                        (t (bbq:search-items (cl-strings:join argv :separator " "))))))
-      (bbq:mpc-clear-play items))))
+      (bbq:mpm-clear-play items))))

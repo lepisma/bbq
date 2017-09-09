@@ -2,7 +2,7 @@
 
 (in-package #:bbq)
 
-(export '(mpc-clear-play
+(export '(mpm-clear-play
           search-items
           new-items
           artist-cap-items))
@@ -11,13 +11,17 @@
 
 (defvar *music-dir* nil
   "Path to music directory")
-(defvar *beets-db* nil
-  "Path to beets sqlite database")
+
+(defvar *mpm-db* nil
+  "Path to mpm sqlite database")
+
+(defvar *mpm-player-url* "http://127.0.0.1:6672"
+  "Url for mpm-player server")
 
 (with-open-file (fp *config-path*)
   (let ((config (read fp)))
     (setf *music-dir* (cdr (assoc 'music-dir config))
-          *beets-db* (cdr (assoc 'beets-db config)))))
+          *mpm-db* (cdr (assoc 'mpm-db config)))))
 
 (defun search-items (query)
   "Simple search across album, artist and title"
@@ -32,23 +36,28 @@
 
 (defun new-items (n)
   "Return n new items"
-  (let* ((stmt (format nil "SELECT substr(path, ~A) FROM items ORDER BY mtime DESC LIMIT ~A" (+ 1 (length *music-dir*)) n))
-         (results (inferior-shell:run/ss `(sqlite3 ,*beets-db* ,stmt))))
+  (let* ((stmt (format nil "SELECT id FROM songs ORDER BY mtime DESC LIMIT ~A" n))
+         (results (inferior-shell:run/ss `(sqlite3 ,*mpm-db* ,stmt))))
     (cl-strings:split results #\Linefeed)))
 
 (defun artist-cap-items (n)
   "Return items with 'artist items' <= n"
-  (let* ((stmt (format nil "SELECT substr(path, ~A) FROM items WHERE artist IN (SELECT artist FROM items GROUP BY artist HAVING count(*) <= ~A)"
-                       (+ 1 (length *music-dir*)) n))
-         (results (inferior-shell:run/ss `(sqlite3 ,*beets-db* ,stmt))))
+  (let* ((stmt (format nil "SELECT id FROM songs WHERE artist IN (SELECT artist FROM songs GROUP BY artist HAVING count(*) <= ~A)" n))
+         (results (inferior-shell:run/ss `(sqlite3 ,*mpm-db* ,stmt))))
     (cl-strings:split results #\Linefeed)))
 
-(defun mpc-add-items (items)
+(defun mpm-add-items (items)
   "Add items to the playlist"
-  (inferior-shell:run/ss `(mpc add ,@items)))
+  (dex:get (format nil "~A/add?ids=~A" *mpm-player-url* (cl-strings:join items :separator ","))))
 
-(defun mpc-clear-play (items)
+(defun mpm-clear ()
+  (dex:get (format nil "~A/clear" *mpm-player-url*)))
+
+(defun mpm-next ()
+  (dex:get (format nil "~A/next" *mpm-player-url*)))
+
+(defun mpm-clear-play (items)
   "Clear playlist. Add items and play."
-  (inferior-shell:run/ss '(mpc clear))
-  (mpc-add-items items)
-  (inferior-shell:run/ss '(mpc play)))
+  (mpm-clear)
+  (mpm-add-items items)
+  (mpm-next))
