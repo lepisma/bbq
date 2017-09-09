@@ -21,14 +21,15 @@
 
 (defun search-items (query)
   "Simple search across album, artist and title"
-  (let ((fields '(album artist title)))
+  (let ((fields '("album" "artist" "title")))
     (remove-if (lambda (item) (string-equal "" item))
                (reduce
                 (lambda (a b)
                   (union a b :test 'string-equal))
                 (mapcar (lambda (field)
                           (cl-strings:split
-                           (inferior-shell:run/ss `(mpc search ,field ,query)) #\Linefeed)) fields)))))
+                           (let ((stmt (format nil "SELECT id FROM songs WHERE lower(~A) LIKE '%~A%'" field query)))
+                             (inferior-shell:run/ss `(sqlite3 ,*mpm-db* ,stmt))) #\Linefeed)) fields)))))
 
 (defun new-items (n)
   "Return n new items"
