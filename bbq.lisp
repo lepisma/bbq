@@ -8,17 +8,19 @@
           new-items
           artist-cap-items))
 
-(defvar *config-path* #p"~/.bbq")
+(defvar *mpm-config-path* #p"~/.mpm.d/config")
 
 (defvar *mpm-db* nil
   "Path to mpm sqlite database")
 
-(defvar *mpm-player-url* "http://127.0.0.1:6672"
+(defvar *mpm-player-url* nil
   "Url for mpm-player server")
 
-(with-open-file (fp *config-path*)
-  (let ((config (read fp)))
-    (setf *mpm-db* (cdr (assoc 'mpm-db config)))))
+;; Read from mpm config
+(let ((mpm-config (yaml:parse *mpm-config-path*)))
+  (print (gethash "database" mpm-config))
+  (setf *mpm-db* (pathname (gethash "database" mpm-config)))
+  (setf *mpm-player-url* (format nil "http://127.0.0.1:~A" (gethash "port" (gethash "player" mpm-config)))))
 
 (defun search-items (query)
   "Simple search across album, artist and title"
