@@ -3,8 +3,9 @@
 (in-package #:bbq)
 
 (export '(init-config
-          mpm-player-clear-play
           mpm-player-request
+          mpm-player-current-string
+          mpm-player-clear-play
           search-items
           new-items
           artist-cap-items))
@@ -56,6 +57,11 @@
 (defun mpm-player-add-items (items)
   "Add items to the playlist after shuffling"
   (mpm-player-request "add" (format nil "ids=~A" (cl-strings:join items :separator ","))))
+
+(defun mpm-player-current-string ()
+  "Return short string for current song"
+  (let ((data (json:decode-json-from-string (mpm-player-request "current"))))
+    (format nil "~A - ~A" (cdr (assoc :TITLE data)) (cdr (assoc :ARTIST data)) )))
 
 (defun mpm-player-clear-play (items)
   "Clear playlist. Add items and play."

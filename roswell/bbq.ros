@@ -1,6 +1,6 @@
 #!/bin/sh
 #|-*- mode:lisp -*-|#
-#| User interface for mpm-player
+#| Frontend for mpm-play
 exec ros -Q -- $0 "$@"
 |#
 (progn ;;init forms
@@ -16,4 +16,5 @@ exec ros -Q -- $0 "$@"
           ((string-equal cmd ":next") (bbq:mpm-player-request "next"))
           ((string-equal cmd ":prev") (bbq:mpm-player-request "prev"))
           ((string-equal cmd ":toggle") (bbq:mpm-player-request "toggle"))
+          ((string-equal cmd ":current") (format t "~A" (bbq:mpm-player-current-string)))
           (t (bbq:mpm-player-clear-play (bbq:search-items (cl-strings:join argv :separator " ")))))))
