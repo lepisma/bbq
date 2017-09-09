@@ -10,6 +10,7 @@ exec ros -Q -- $0 "$@"
 (defun main (&rest argv)
   (declare (ignorable argv))
   (let ((cmd (or (car argv) "")))
+    (bbq:init-config)
     (cond ((string-equal cmd ":new") (bbq:mpm-player-clear-play (bbq:new-items (parse-integer (second argv)))))
           ((string-equal cmd ":cap") (bbq:mpm-player-clear-play (bbq:artist-cap-items (parse-integer (second argv)))))
           ((string-equal cmd ":next") (bbq:mpm-player-request "next"))

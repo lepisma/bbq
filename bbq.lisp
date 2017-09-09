@@ -2,7 +2,8 @@
 
 (in-package #:bbq)
 
-(export '(mpm-player-clear-play
+(export '(init-config
+          mpm-player-clear-play
           mpm-player-request
           search-items
           new-items
@@ -16,13 +17,10 @@
 (defvar *mpm-player-url* nil
   "Url for mpm-player server")
 
-;; Read from mpm config
-(let ((mpm-config (yaml:parse *mpm-config-path*)))
-  (print (gethash "database" mpm-config))
-  (setf *mpm-db* (pathname (gethash "database" mpm-config)))
-  (setf *mpm-player-url* (format nil "http://127.0.0.1:~A" (gethash "port" (gethash "player" mpm-config)))))
-
-(setf *random-state* (make-random-state t))
+(defun init-config ()
+  (let ((mpm-config (yaml:parse *mpm-config-path*)))
+    (setf *mpm-db* (pathname (gethash "database" mpm-config)))
+    (setf *mpm-player-url* (format nil "http://127.0.0.1:~A" (gethash "port" (gethash "player" mpm-config))))))
 
 (defun search-items (query)
   "Simple search across album, artist and title"
@@ -61,6 +59,7 @@
 
 (defun mpm-player-clear-play (items)
   "Clear playlist. Add items and play."
+  (setf *random-state* (make-random-state t))
   (mpm-player-request "clear")
   (mpm-player-add-items (sort items (lambda (x y) (zerop (random 2)))))
   (mpm-player-request "next"))
