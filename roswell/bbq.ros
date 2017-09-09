@@ -1,6 +1,6 @@
 #!/bin/sh
 #|-*- mode:lisp -*-|#
-#| <Put a one-line description here>
+#| User interface for mpm-player
 exec ros -Q -- $0 "$@"
 |#
 (progn ;;init forms
@@ -10,7 +10,9 @@ exec ros -Q -- $0 "$@"
 (defun main (&rest argv)
   (declare (ignorable argv))
   (let ((cmd (or (car argv) "")))
-    (let ((items (cond ((string-equal cmd "new") (bbq:new-items (parse-integer (second argv))))
-                       ((string-equal cmd "cap") (bbq:artist-cap-items (parse-integer (second argv))))
-                       (t (bbq:search-items (cl-strings:join argv :separator " "))))))
-      (bbq:mpm-clear-play items))))
+    (cond ((string-equal cmd ":new") (bbq:mpm-player-clear-play (bbq:new-items (parse-integer (second argv)))))
+          ((string-equal cmd ":cap") (bbq:mpm-player-clear-play (bbq:artist-cap-items (parse-integer (second argv)))))
+          ((string-equal cmd ":next") (bbq:mpm-player-request "next"))
+          ((string-equal cmd ":prev") (bbq:mpm-player-request "prev"))
+          ((string-equal cmd ":toggle") (bbq:mpm-player-request "toggle"))
+          (t (bbq:mpm-player-clear-play (bbq:search-items (cl-strings:join argv :separator " ")))))))

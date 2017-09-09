@@ -2,7 +2,8 @@
 
 (in-package #:bbq)
 
-(export '(mpm-clear-play
+(export '(mpm-player-clear-play
+          mpm-player-request
           search-items
           new-items
           artist-cap-items))
@@ -43,18 +44,19 @@
          (results (inferior-shell:run/ss `(sqlite3 ,*mpm-db* ,stmt))))
     (cl-strings:split results #\Linefeed)))
 
-(defun mpm-add-items (items)
+(defun mpm-player-request (route &optional data-string)
+  "Send request to mpm"
+  (let ((base-url (format nil "~A/~A" *mpm-player-url* route)))
+    (if data-string
+        (dex:get (cl-strings:join (list base-url "?" data-string)))
+        (dex:get base-url))))
+
+(defun mpm-player-add-items (items)
   "Add items to the playlist"
-  (dex:get (format nil "~A/add?ids=~A" *mpm-player-url* (cl-strings:join items :separator ","))))
+  (mpm-player-request "add" (format nil "ids=~A" (cl-strings:join items :separator ","))))
 
-(defun mpm-clear ()
-  (dex:get (format nil "~A/clear" *mpm-player-url*)))
-
-(defun mpm-next ()
-  (dex:get (format nil "~A/next" *mpm-player-url*)))
-
-(defun mpm-clear-play (items)
+(defun mpm-player-clear-play (items)
   "Clear playlist. Add items and play."
-  (mpm-clear)
-  (mpm-add-items items)
-  (mpm-next))
+  (mpm-player-request "clear")
+  (mpm-player-add-items items)
+  (mpm-player-request "next"))
