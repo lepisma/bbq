@@ -7,13 +7,11 @@
   "Simple search across album, artist and title"
   (let ((fields '("album" "artist" "title")))
     (remove-if (cut string-equal "" <>)
-               (reduce
-                (lambda (a b)
-                  (union a b :test 'string-equal))
-                (mapcar (lambda (field)
-                          (split
-                           (let ((stmt (format nil "SELECT id FROM songs WHERE lower(~A) LIKE '%~A%'" field query)))
-                             (inferior-shell:run/ss `(sqlite3 ,*db-path* ,stmt))) #\Linefeed)) fields)))))
+               (reduce (cut union <> <> :test 'string-equal)
+                       (mapcar (lambda (field)
+                                 (split
+                                  (let ((stmt (format nil "SELECT id FROM songs WHERE lower(~A) LIKE '%~A%'" field query)))
+                                    (inferior-shell:run/ss `(sqlite3 ,*db-path* ,stmt))) #\Linefeed)) fields)))))
 
 (defun new-items (n)
   "Return n new items"
