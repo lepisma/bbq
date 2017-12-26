@@ -47,7 +47,7 @@
 (defun dispatch-command (cmd flags terms &optional (config-path #p"~/.mpm.d/config"))
   "Execute given command"
   (init-config config-path)
-  (sqlite:with-open-database *db* *db-path*
+  (sqlite:with-open-database (*db* *db-path*)
     (cond ((string= cmd ":new") (reset-and-play (new-items (parse-integer (car terms)))))
           ((string= cmd ":cap") (reset-and-play (artist-cap-items (parse-integer (car terms)))))
           ((string= cmd ":next") (next))
