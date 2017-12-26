@@ -13,10 +13,10 @@
                #:cl-strings
                #:cl-yaml
                #:dexador
-               #:inferior-shell
-               #:serapeum)
+               #:serapeum
+               #:sqlite)
   :serial t
   :components ((:file "package")
                (:file "bbq-vars")
-               (:file "bbq-filter")
+               (:file "bbq-items")
                (:file "bbq")))

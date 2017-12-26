@@ -17,7 +17,12 @@
 
 (defun enqueue-items (items)
   "Add items to the playlist"
-  (player-request "add" #?"ids=${(join items :separator ",")}"))
+  (let ((ids (item-ids items)))
+    (player-request "add" #?"ids=${(join ids :separator ",")}")))
+
+(defun print-items (items)
+  "Print items formatted properly"
+  (format t "~{~A~%~}" (mapcar #'format-item items)))
 
 (defun now-playing ()
   "Return short string for current song"
@@ -42,10 +47,11 @@
 (defun dispatch-command (cmd flags terms &optional (config-path #p"~/.mpm.d/config"))
   "Execute given command"
   (init-config config-path)
-  (cond ((string= cmd ":new") (reset-and-play (new-items (parse-integer (car terms)))))
-        ((string= cmd ":cap") (reset-and-play (artist-cap-items (parse-integer (car terms)))))
-        ((string= cmd ":next") (next))
-        ((string= cmd ":prev") (prev))
-        ((string= cmd ":toggle") (toggle))
-        ((string= cmd ":current") (print (now-playing)))
-        (t (reset-and-play (search-items (join terms :separator " "))))))
+  (sqlite:with-open-database *db* *db-path*
+    (cond ((string= cmd ":new") (reset-and-play (new-items (parse-integer (car terms)))))
+          ((string= cmd ":cap") (reset-and-play (artist-cap-items (parse-integer (car terms)))))
+          ((string= cmd ":next") (next))
+          ((string= cmd ":prev") (prev))
+          ((string= cmd ":toggle") (toggle))
+          ((string= cmd ":current") (print (now-playing)))
+          (t (reset-and-play (search-items (join terms :separator " ")))))))
