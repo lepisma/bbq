@@ -18,6 +18,29 @@
                              (sqlite:execute-to-list *db* query-album term)
                              :key #'car)) terms))))
 
+(defun parse-pm-query (terms &optional (last-op "+") p-acc m-acc)
+  "Group plus minus queries"
+  (if (null terms) (values p-acc m-acc)
+      (let* ((current-terms (loop for term in terms
+                               while (not (member term '("+" "-") :test #'string=))
+                               collect term))
+             (rest-terms (nthcdr (length current-terms) terms))
+             (next-op (or (car rest-terms) "+")))
+        (if (string= last-op "+")
+            (parse-pm-query (cdr rest-terms) next-op
+                            (cons current-terms p-acc) m-acc)
+            (parse-pm-query (cdr rest-terms) next-op
+                            p-acc (cons current-terms m-acc))))))
+
+(defun pm-search-items (terms)
+  "Search using the plus minus syntax"
+  (multiple-value-bind (p-groups m-groups) (parse-pm-query terms)
+    (let ((positives (reduce (cut union <> <> :key #'car) (mapcar #'search-items p-groups)))
+          (negatives (let ((results (mapcar #'search-items m-groups)))
+                       (if results (reduce (cut union <> <> :key #'car) results)
+                           nil))))
+      (set-difference positives negatives :key #'car))))
+
 (defun new-items (n)
   "Return n new items"
   (sqlite:execute-to-list *db* (items-query-string "ORDER BY mtime DESC LIMIT ?") n))
