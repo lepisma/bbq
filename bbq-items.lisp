@@ -7,13 +7,16 @@
   "Return query string for items"
   #?"SELECT ${(join *item-fields* :separator ", ")} FROM songs ${query}")
 
-(defun search-items (search-for)
-  "Simple search across album, artist and title"
+(defun search-items (terms)
+  "Simple search across album, artist and title using intersection of results on terms"
   (let ((query (items-query-string "WHERE lower(artist || ' ' || title) LIKE '%' || ? || '%'"))
         (query-album (items-query-string "WHERE album IS NOT NULL AND lower(album) LIKE '%' || ? || '%'"))
-        (search-for (string-downcase search-for)))
-    (union (sqlite:execute-to-list *db* query search-for)
-           (sqlite:execute-to-list *db* query-album search-for) :key #'car)))
+        (terms (mapcar #'string-downcase terms)))
+    (reduce (cut intersection <> <> :key #'car)
+            (mapcar (lambda (term)
+                      (union (sqlite:execute-to-list *db* query term)
+                             (sqlite:execute-to-list *db* query-album term)
+                             :key #'car)) terms))))
 
 (defun new-items (n)
   "Return n new items"
