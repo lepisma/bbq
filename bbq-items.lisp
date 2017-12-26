@@ -23,11 +23,6 @@
   "Return items with 'artist items' <= n"
   (sqlite:execute-to-list *db* (items-query-string "WHERE artist IN (SELECT artist FROM songs GROUP BY artist HAVING count(*) <= ?)") n))
 
-(defun format-item (item)
-  "Format item in a string"
-  (let ((paired (mapcar #'list *item-fields* item)))
-    (format nil "~{~{~6A ~}~%~}" paired)))
-
 (defun item-ids (items)
   "Return a list of ids from given items."
   (let ((id-idx (position "id" *item-fields* :test #'string=)))

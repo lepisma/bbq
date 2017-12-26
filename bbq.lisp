@@ -20,6 +20,11 @@
   (let ((ids (item-ids items)))
     (player-request "add" `(("ids" . ,(join ids :separator ","))))))
 
+(defun format-item (item)
+  "Format item in a string"
+  (let ((paired (mapcar #'list *item-fields* item)))
+    (format nil "~{~{~6A ~}~%~}" paired)))
+
 (defun print-items (items)
   "Print items formatted properly"
   (format t "~{~A~%~}" (mapcar #'format-item items))
