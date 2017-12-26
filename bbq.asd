@@ -2,10 +2,18 @@
 
 (asdf:defsystem #:bbq
   :description "Frontend for mpm-play"
-  :author "Abhinav Tushar <abhinav.tushar.vs@gmail.com>"
+  :author "Abhinav Tushar <lepisma@fastmail.com>"
   :license "GPLv3"
-  :depends-on (:inferior-shell :cl-strings :dexador :cl-yaml :cl-json)
+  :depends-on (#:cl-cut
+               #:cl-interpol
+               #:cl-json
+               #:cl-strings
+               #:cl-yaml
+               #:dexador
+               #:inferior-shell
+               #:serapeum)
   :serial t
   :components ((:file "package")
+               (:file "bbq-vars")
+               (:file "bbq-filter")
                (:file "bbq")))
-

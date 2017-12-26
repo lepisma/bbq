@@ -3,18 +3,18 @@
 #| Frontend for mpm-play
 exec ros -Q -- $0 "$@"
 |#
-(progn ;;init forms
-  (ros:ensure-asdf)
-  #+quicklisp (ql:quickload :bbq :silent t))
+
+(ql:quickload '(:bbq :cl-cut :serapeum) :silent t)
+(import '(serapeum:partition cl-cut:cut))
+
+(defun parse-args (argv commands flags)
+  "Return parsed (values cmd flags terms)"
+  (let ((cmd (car (member (car argv) commands :test #'string=))))
+    (multiple-value-bind (fs as)
+        (partition (cut member <> flags :test #'string=)
+                   (if cmd (cdr argv) argv))
+      (values (or cmd ":default") fs as))))
 
 (defun main (&rest argv)
-  (declare (ignorable argv))
-  (let ((cmd (or (car argv) "")))
-    (bbq:init-config)
-    (cond ((string-equal cmd ":new") (bbq:mpm-player-clear-play (bbq:new-items (parse-integer (second argv)))))
-          ((string-equal cmd ":cap") (bbq:mpm-player-clear-play (bbq:artist-cap-items (parse-integer (second argv)))))
-          ((string-equal cmd ":next") (bbq:mpm-player-request "next"))
-          ((string-equal cmd ":prev") (bbq:mpm-player-request "prev"))
-          ((string-equal cmd ":toggle") (bbq:mpm-player-request "toggle"))
-          ((string-equal cmd ":current") (format t "~A" (bbq:mpm-player-current-string)))
-          (t (bbq:mpm-player-clear-play (bbq:search-items (cl-strings:join argv :separator " ")))))))
+  (multiple-value-bind (cmd flags terms) (parse-args argv bbq:known-commands bbq:known-flags)
+    (bbq:dispatch-command cmd flags terms)))
