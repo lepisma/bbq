@@ -8,17 +8,17 @@
     (setf *db-path* (truename (gethash "database" config)))
     (setf *player-url* #?"http://127.0.0.1:${(gethash "port" (gethash "player" config))}")))
 
-(defun player-request (route &optional data-string)
+(defun player-request (route &optional post-data)
   "Send request to mpm-play"
   (let ((base-url #?"${*player-url*}/${route}"))
-    (if data-string
-        (dex:get (join (list base-url "?" data-string)))
+    (if post-data
+        (dex:post base-url :content post-data)
         (dex:get base-url))))
 
 (defun enqueue-items (items)
   "Add items to the playlist"
   (let ((ids (item-ids items)))
-    (player-request "add" #?"ids=${(join ids :separator ",")}")))
+    (player-request "add" `(("ids" . ,(join ids :separator ","))))))
 
 (defun print-items (items)
   "Print items formatted properly"
