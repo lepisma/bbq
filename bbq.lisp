@@ -37,7 +37,7 @@
   (player-request "prev"))
 
 (defun toggle ()
-  (player-request "prev"))
+  (player-request "toggle"))
 
 (defun dispatch-command (cmd flags terms &optional (config-path #p"~/.mpm.d/config"))
   "Execute given command"
