@@ -15,6 +15,11 @@
         (dex:post base-url :content post-data)
         (dex:get base-url))))
 
+(defun item-ids (items)
+  "Return a list of ids from given items."
+  (let ((id-idx (position "id" *item-fields* :test #'string=)))
+    (mapcar (cut nth id-idx <>) items)))
+
 (defun enqueue-items (items)
   "Add items to the playlist"
   (let ((ids (item-ids items)))

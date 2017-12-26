@@ -48,8 +48,3 @@
 (defun artist-cap-items (n)
   "Return items with 'artist items' <= n"
   (sqlite:execute-to-list *db* (items-query-string "WHERE artist IN (SELECT artist FROM songs GROUP BY artist HAVING count(*) <= ?)") n))
-
-(defun item-ids (items)
-  "Return a list of ids from given items."
-  (let ((id-idx (position "id" *item-fields* :test #'string=)))
-    (mapcar (cut nth id-idx <>) items)))
