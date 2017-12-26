@@ -18,23 +18,44 @@
                              (sqlite:execute-to-list *db* query-album term)
                              :key #'car)) terms))))
 
+(defun is-pm? (term)
+  (member term '("+" "-") :test #'string=))
+
+(defun remove-multiple-pms (terms &optional acc taken?)
+  "Remove multiple +-es and keep the latest one."
+  (if (null terms) (nreverse acc)
+      (let ((this (car terms)))
+        (remove-multiple-pms
+         (cdr terms)
+         (if (and (is-pm? this) taken?)
+             (cons this (cdr acc))
+             (cons this acc))
+         (is-pm? this)))))
+
+(defun fix-first-pm (terms)
+  "Fix + and - in the beginning"
+  (cond ((string= (car terms) "-") (cons "" terms))
+        ((string= (car terms) "+") (cdr terms))
+        (t terms)))
+
 (defun sanitize-pm-query (terms)
   "Remove stupid things"
-  (remove-if #'null terms))
+  (->> terms
+     (remove-if #'null)
+     (remove-multiple-pms)
+     (fix-first-pm)))
 
 (defun parse-pm-query (terms &optional (last-op "+") p-acc m-acc)
   "Group plus minus queries"
   (if (null terms) (values p-acc m-acc)
       (let* ((current-terms (loop for term in terms
-                               while (not (member term '("+" "-") :test #'string=))
+                               while (not (is-pm? term))
                                collect term))
              (rest-terms (nthcdr (length current-terms) terms))
              (next-op (or (car rest-terms) "+")))
         (if (string= last-op "+")
-            (parse-pm-query (cdr rest-terms) next-op
-                            (cons current-terms p-acc) m-acc)
-            (parse-pm-query (cdr rest-terms) next-op
-                            p-acc (cons current-terms m-acc))))))
+            (parse-pm-query (cdr rest-terms) next-op (cons current-terms p-acc) m-acc)
+            (parse-pm-query (cdr rest-terms) next-op p-acc (cons current-terms m-acc))))))
 
 (defun new-items (n)
   "Return n new items"
