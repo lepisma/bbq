@@ -64,4 +64,4 @@
             ((string= cmd ":prev") (prev))
             ((string= cmd ":toggle") (toggle))
             ((string= cmd ":current") (print (now-playing)))
-            (t (print-or-play (search-items terms) print-only))))))
+            (t (print-or-play (pm-search-items terms) print-only))))))

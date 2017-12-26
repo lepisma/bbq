@@ -7,7 +7,7 @@
   "Return query string for items"
   #?"SELECT ${(join *item-fields* :separator ", ")} FROM songs ${query}")
 
-(defun search-items (terms)
+(defun basic-search-items (terms)
   "Simple search across album, artist and title using intersection of results on terms"
   (let ((query (items-query-string "WHERE lower(artist || ' ' || title) LIKE '%' || ? || '%'"))
         (query-album (items-query-string "WHERE album IS NOT NULL AND lower(album) LIKE '%' || ? || '%'"))
@@ -35,8 +35,8 @@
 (defun pm-search-items (terms)
   "Search using the plus minus syntax"
   (multiple-value-bind (p-groups m-groups) (parse-pm-query terms)
-    (let ((positives (reduce (cut union <> <> :key #'car) (mapcar #'search-items p-groups)))
-          (negatives (let ((results (mapcar #'search-items m-groups)))
+    (let ((positives (reduce (cut union <> <> :key #'car) (mapcar #'basic-search-items p-groups)))
+          (negatives (let ((results (mapcar #'basic-search-items m-groups)))
                        (if results (reduce (cut union <> <> :key #'car) results)
                            nil))))
       (set-difference positives negatives :key #'car))))
