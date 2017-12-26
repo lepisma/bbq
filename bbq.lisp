@@ -26,9 +26,8 @@
 
 (defun reset-and-play (items)
   "Clear playlist. Add items and play."
-  (setf *random-state* (make-random-state t))
   (player-request "clear")
-  (enqueue-items (sort items (lambda (x y) (zerop (random 2)))))
+  (enqueue-items (shuffle items))
   (player-request "next"))
 
 (defun next ()

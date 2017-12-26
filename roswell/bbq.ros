@@ -16,5 +16,6 @@ exec ros -Q -- $0 "$@"
       (values (or cmd ":default") fs as))))
 
 (defun main (&rest argv)
+  (setf *random-state* (make-random-state t))
   (multiple-value-bind (cmd flags terms) (parse-args argv bbq:known-commands bbq:known-flags)
     (bbq:dispatch-command cmd flags terms)))
