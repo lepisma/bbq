@@ -5,7 +5,7 @@
 
 (defun init-config (config-path)
   (let ((config (yaml:parse config-path)))
-    (setf *db-path* (pathname (gethash "database" config)))
+    (setf *db-path* (truename (gethash "database" config)))
     (setf *player-url* #?"http://127.0.0.1:${(gethash "port" (gethash "player" config))}")))
 
 (defun player-request (route &optional data-string)
