@@ -25,10 +25,10 @@
 
 (defun format-item (item)
   "Format item in a string"
-  (let ((paired (mapcar #'list item-fields item)))
+  (let ((paired (mapcar #'list *item-fields* item)))
     (format nil "~{~{~6A ~}~%~}" paired)))
 
 (defun item-ids (items)
   "Return a list of ids from given items."
-  (let ((id-idx (position "id" item-fields :test #'string=)))
+  (let ((id-idx (position "id" *item-fields* :test #'string=)))
     (mapcar (cut nth id-idx <>) items)))
