@@ -22,7 +22,8 @@
 
 (defun print-items (items)
   "Print items formatted properly"
-  (format t "~{~A~%~}" (mapcar #'format-item items)))
+  (format t "~{~A~%~}" (mapcar #'format-item items))
+  (format t "Total ~A items" (length items)))
 
 (defun now-playing ()
   "Return short string for current song"
@@ -44,14 +45,18 @@
 (defun toggle ()
   (player-request "toggle"))
 
+(defun print-or-play (items &optional print)
+  (if print (print-items items) (reset-and-play items)))
+
 (defun dispatch-command (cmd flags terms &optional (config-path #p"~/.mpm.d/config"))
   "Execute given command"
   (init-config config-path)
   (sqlite:with-open-database (*db* *db-path*)
-    (cond ((string= cmd ":new") (reset-and-play (new-items (parse-integer (car terms)))))
-          ((string= cmd ":cap") (reset-and-play (artist-cap-items (parse-integer (car terms)))))
-          ((string= cmd ":next") (next))
-          ((string= cmd ":prev") (prev))
-          ((string= cmd ":toggle") (toggle))
-          ((string= cmd ":current") (print (now-playing)))
-          (t (reset-and-play (search-items (join terms :separator " ")))))))
+    (let ((print-only (member "--list" flags :test #'string=)))
+      (cond ((string= cmd ":new") (print-or-play (new-items (parse-integer (car terms))) print-only))
+            ((string= cmd ":cap") (print-or-play (artist-cap-items (parse-integer (car terms))) print-only))
+            ((string= cmd ":next") (next))
+            ((string= cmd ":prev") (prev))
+            ((string= cmd ":toggle") (toggle))
+            ((string= cmd ":current") (print (now-playing)))
+            (t (print-or-play (search-items (join terms :separator " ")) print-only))))))
