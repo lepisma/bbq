@@ -13,7 +13,7 @@ exec ros -Q -- $0 "$@"
     (multiple-value-bind (fs as)
         (partition (cut member <> flags :test #'string=)
                    (if cmd (cdr argv) argv))
-      (values (or cmd ":default") fs as))))
+      (values cmd fs as))))
 
 (defun main (&rest argv)
   (setf *random-state* (make-random-state t))

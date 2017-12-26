@@ -18,6 +18,10 @@
                              (sqlite:execute-to-list *db* query-album term)
                              :key #'car)) terms))))
 
+(defun sanitize-pm-query (terms)
+  "Remove stupid things"
+  (remove-if #'null terms))
+
 (defun parse-pm-query (terms &optional (last-op "+") p-acc m-acc)
   "Group plus minus queries"
   (if (null terms) (values p-acc m-acc)
@@ -32,15 +36,6 @@
             (parse-pm-query (cdr rest-terms) next-op
                             p-acc (cons current-terms m-acc))))))
 
-(defun pm-search-items (terms)
-  "Search using the plus minus syntax"
-  (multiple-value-bind (p-groups m-groups) (parse-pm-query terms)
-    (let ((positives (reduce (cut union <> <> :key #'car) (mapcar #'basic-search-items p-groups)))
-          (negatives (let ((results (mapcar #'basic-search-items m-groups)))
-                       (if results (reduce (cut union <> <> :key #'car) results)
-                           nil))))
-      (set-difference positives negatives :key #'car))))
-
 (defun new-items (n)
   "Return n new items"
   (sqlite:execute-to-list *db* (items-query-string "ORDER BY mtime DESC LIMIT ?") n))
@@ -48,3 +43,18 @@
 (defun artist-cap-items (n)
   "Return items with 'artist items' <= n"
   (sqlite:execute-to-list *db* (items-query-string "WHERE artist IN (SELECT artist FROM songs GROUP BY artist HAVING count(*) <= ?)") n))
+
+(defun cmd-search-items (terms)
+  "Use cmd to figure out results"
+  (let ((cmd (car terms)))
+    (cond ((string= cmd ":new") (new-items (parse-integer (cadr terms))))
+          ((string= cmd ":cap") (artist-cap-items (parse-integer (cadr terms))))
+          (t (basic-search-items terms)))))
+
+(defun dispatch-search (terms)
+  (multiple-value-bind (p-groups m-groups) (parse-pm-query (sanitize-pm-query terms))
+    (let ((positives (reduce (cut union <> <> :key #'car) (mapcar #'cmd-search-items p-groups)))
+          (negatives (let ((nresults (mapcar #'cmd-search-items m-groups)))
+                       (if nresults (reduce (cut union <> <> :key #'car) nresults)
+                           nil))))
+      (set-difference positives negatives :key #'car))))
