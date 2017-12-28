@@ -66,5 +66,5 @@
       (cond ((string= cmd ":next") (next))
             ((string= cmd ":prev") (prev))
             ((string= cmd ":toggle") (toggle))
-            ((string= cmd ":current") (print (now-playing)))
+            ((string= cmd ":current") (princ (now-playing)))
             (t (print-or-play (dispatch-search (cons cmd terms)) print-only))))))
