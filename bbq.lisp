@@ -35,10 +35,12 @@
   (format t "~{~A~%~}" (mapcar #'format-item items))
   (format t "Total ~A items" (length items)))
 
-(defun now-playing ()
-  "Return short string for current song"
-  (let ((data (json:decode-json-from-string (player-request "current"))))
-    #?"${(cdr (assoc :TITLE data))} - ${(cdr (assoc :ARTIST data))}"))
+(defun state ()
+  "Return state of the player as json string"
+  (let ((current (json:decode-json-from-string (player-request "current")))
+        (vars (json:decode-json-from-string (player-request "state"))))
+    (json:encode-json-alist-to-string `((:vars . ,vars)
+                                        (:item . ,current)))))
 
 (defun reset-and-play (items)
   "Clear playlist. Add items and play."
@@ -55,6 +57,9 @@
 (defun toggle ()
   (player-request "toggle"))
 
+(defun toggle-repeat ()
+  (player-request "repeat"))
+
 (defun print-or-play (items &optional print)
   (if print (print-items items) (reset-and-play items)))
 
@@ -66,5 +71,6 @@
       (cond ((string= cmd ":next") (next))
             ((string= cmd ":prev") (prev))
             ((string= cmd ":toggle") (toggle))
-            ((string= cmd ":current") (princ (now-playing)))
+            ((string= cmd ":repeat") (toggle-repeat))
+            ((string= cmd ":state") (princ (state)))
             (t (print-or-play (dispatch-search (cons cmd terms)) print-only))))))

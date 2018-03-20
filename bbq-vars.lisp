@@ -16,7 +16,7 @@
   "Fields for describing an item")
 
 (defparameter known-commands
-  '(":new" ":cap" ":next" ":prev" ":toggle" ":current")
+  '(":new" ":cap" ":next" ":prev" ":toggle" ":state" ":repeat")
   "Commands known to bbq")
 
 (defparameter known-flags '("--list")
