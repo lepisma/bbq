@@ -25,15 +25,21 @@
   (let ((ids (item-ids items)))
     (player-request "add" `(("ids" . ,(join ids :separator ","))))))
 
+(defun item-alist (item)
+  "Create alist from item."
+  (pairlis *item-fields* item))
+
 (defun format-item (item)
   "Format item in a string"
   (let ((paired (mapcar #'list *item-fields* item)))
     (format nil "~{~{~6A ~}~%~}" paired)))
 
-(defun print-items (items)
+(defun print-items (items &optional sexp)
   "Print items formatted properly"
-  (format t "~{~A~%~}" (mapcar #'format-item items))
-  (format t "Total ~A items" (length items)))
+  (if sexp (print (mapcar #'item-alist items))
+      (progn
+        (format t "~{~A~%~}" (mapcar #'format-item items))
+        (format t "Total ~A items" (length items)))))
 
 (defun state ()
   "Return state of the player as json string"
@@ -60,17 +66,18 @@
 (defun toggle-repeat ()
   (player-request "repeat"))
 
-(defun print-or-play (items &optional print)
-  (if print (print-items items) (reset-and-play items)))
+(defun print-or-play (items &optional print print-sexp)
+  (if print (print-items items print-sexp) (reset-and-play items)))
 
 (defun dispatch-command (cmd flags terms &optional (config-path #p"~/.mpm.d/config"))
   "Execute given command"
   (init-config config-path)
   (sqlite:with-open-database (*db* *db-path*)
-    (let ((print-only (member "--list" flags :test #'string=)))
+    (let ((print-only (member "--list" flags :test #'string=))
+          (print-sexp (member "--sexp" flags :test #'string=)))
       (cond ((string= cmd ":next") (next))
             ((string= cmd ":prev") (prev))
             ((string= cmd ":toggle") (toggle))
             ((string= cmd ":repeat") (toggle-repeat))
             ((string= cmd ":state") (princ (state)))
-            (t (print-or-play (dispatch-search (cons cmd terms)) print-only))))))
+            (t (print-or-play (dispatch-search (cons cmd terms)) print-only print-sexp))))))

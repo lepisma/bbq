@@ -19,5 +19,5 @@
   '(":new" ":cap" ":next" ":prev" ":toggle" ":state" ":repeat")
   "Commands known to bbq")
 
-(defparameter known-flags '("--list")
+(defparameter known-flags '("--list" "--sexp")
   "Flags known to bbq")
