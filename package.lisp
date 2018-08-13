@@ -17,3 +17,7 @@
   (:export #:dispatch-command
            #:known-commands
            #:known-flags))
+
+(defpackage #:yt
+  (:use #:cl)
+  (:export #:get-id))

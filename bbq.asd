@@ -10,6 +10,7 @@
                #:cl-cut
                #:cl-interpol
                #:cl-json
+               #:cl-ppcre
                #:cl-strings
                #:cl-yaml
                #:dexador
@@ -17,6 +18,7 @@
                #:sqlite)
   :serial t
   :components ((:file "package")
+               (:file "yt")
                (:file "bbq-vars")
                (:file "bbq-items")
                (:file "bbq")))
