@@ -1,7 +1,7 @@
 (in-package #:yt)
 
 (defun get-id (url)
-  "Return 11 char youtube identifier"
+  "Return 11 char youtube identifier. From https://gist.github.com/takien/4077195"
   (let* ((url (ppcre:regex-replace-all "(>|<)" url ""))
          (splits (ppcre:split "(vi\/|v%3D|v=|\/v\/|youtu\.be\/|\/embed\/)" url)))
     (if (> (length splits) 1)
