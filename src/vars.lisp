@@ -12,7 +12,7 @@
 (defvar *player-url* "http://127.0.0.1:6672"
   "Url for mpm-play server")
 
-(defparameter *item-fields* '("id" "title" "artist" "album" "url")
+(defparameter *item-fields* '("id" "artist" "title" "album" "url" "mtime")
   "Fields for describing an item")
 
 (defparameter known-commands

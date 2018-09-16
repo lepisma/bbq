@@ -23,6 +23,11 @@
         #:cl-strings
         #:trivia))
 
+(defpackage #:bbq-er
+  (:use #:cl
+        #:cl-strings
+        #:trivia))
+
 (defpackage #:yt
   (:use #:cl)
   (:export #:get-id))

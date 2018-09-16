@@ -1,7 +1,7 @@
 ;;;; bbq.asd
 
 (asdf:defsystem #:bbq
-  :description "Frontend for mpm-play"
+  :description "Client for mpm-play"
   :author "Abhinav Tushar <lepisma@fastmail.com>"
   :license "GPLv3"
   :depends-on (#:alexandria
@@ -17,9 +17,16 @@
                #:serapeum
                #:sqlite
                #:trivia)
-  :serial t
-  :components ((:file "package")
-               (:file "yt")
-               (:file "bbq-vars")
-               (:file "bbq-items")
-               (:file "bbq")))
+  :components
+  ((:file "package")
+   (:module "src"
+    :depends-on ("package")
+    :serial t
+    :components
+    ((:module "utils" :components ((:file "yt")))
+     (:file "vars")
+     (:file "item")
+     (:file "parser")
+     (:file "er")
+     (:file "log")
+     (:file "bbq")))))

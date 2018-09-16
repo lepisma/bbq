@@ -3,9 +3,20 @@
 (in-package #:bbq)
 (cl-interpol:enable-interpol-syntax)
 
-(defun items-query-string (query)
-  "Return query string for items"
-  #?"SELECT ${(join *item-fields* :separator ", ")} FROM songs ${query}")
+(defstruct item
+  id artist title album url mtime)
+
+(defun execute-query (condition &rest parameters)
+  "Execute query for the sql-condition and return a list of items."
+  (let ((query #?"SELECT ${(join *item-fields* :separator ", ")} FROM songs ${condition}"))
+    (mapcar (lambda (sql-item)
+              (trivia:ematch sql-item
+                ((list id artist title album url mtime)
+                 (make-item :id id :artist artist :title title :album album :url url :mtime mtime))))
+            (apply #'sqlite:execute-to-list *db* query parameters))))
+
+(sqlite:with-open-database (*db* *db-path*)
+  (execute-query "order by mtime desc limit 2"))
 
 (defun basic-search-items (terms)
   "Simple search across album, artist and title using intersection of results on terms"
