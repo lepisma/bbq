@@ -18,6 +18,11 @@
            #:known-commands
            #:known-flags))
 
+(defpackage #:bbq-log
+  (:use #:cl
+        #:cl-strings
+        #:trivia))
+
 (defpackage #:yt
   (:use #:cl)
   (:export #:get-id))

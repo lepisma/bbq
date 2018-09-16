@@ -15,7 +15,8 @@
                #:cl-yaml
                #:dexador
                #:serapeum
-               #:sqlite)
+               #:sqlite
+               #:trivia)
   :serial t
   :components ((:file "package")
                (:file "yt")
