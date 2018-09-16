@@ -1,6 +1,6 @@
 ;;;; bbq.asd
 
-(asdf:defsystem #:bbq
+(defsystem #:bbq
   :description "Client for mpm-play"
   :author "Abhinav Tushar <lepisma@fastmail.com>"
   :license "GPLv3"
