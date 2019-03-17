@@ -11,7 +11,7 @@
   "Connection to db")
 
 (defmacro with-db (&rest body)
-  `(sqlite:with-open-database (*db* *db-path*)
+  `(with-open-database (*db* *db-path*)
      ,@body))
 
 (defun add-alist (table alist)
