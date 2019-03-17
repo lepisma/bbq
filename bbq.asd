@@ -26,10 +26,10 @@
     :depends-on ("package")
     :serial t
     :components
-    ((:module "utils" :components ((:file "yt")))
-     (:file "vars")
+    ((:file "vars")
+     (:file "db")
      (:file "item")
-     (:file "parser")
-     (:file "er")
      (:file "log")
-     (:file "bbq")))))
+     (:file "bbq")
+     (:module "utils" :components ((:file "yt")))
+     (:file "importer")))))

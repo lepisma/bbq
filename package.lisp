@@ -6,7 +6,16 @@
   (:export #:with-db
            #:make-song
            #:add
-           #:present?))
+           #:present?
+           #:song-artist
+           #:song-title
+           #:song-url
+           #:song-mtime
+           #:song-album))
+
+(defpackage #:bbq-import
+  (:use #:cl)
+  (:export #:from-url))
 
 (defpackage #:bbq
   (:use #:cl
@@ -34,4 +43,5 @@
 (defpackage #:yt
   (:use #:cl
         #:cl-strings)
-  (:export #:get-song))
+  (:export #:get-song
+           #:url-valid?))
