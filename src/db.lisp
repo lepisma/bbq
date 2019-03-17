@@ -14,6 +14,9 @@
   `(with-open-database (*db* *db-path*)
      ,@body))
 
+(defstruct song
+  id artist title album url mtime)
+
 (defun add-alist (table alist)
   "Add alist in the table."
   (with-db

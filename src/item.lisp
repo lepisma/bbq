@@ -15,9 +15,6 @@
                  (make-item :id id :artist artist :title title :album album :url url :mtime mtime))))
             (apply #'sqlite:execute-to-list *db* query parameters))))
 
-(sqlite:with-open-database (*db* *db-path*)
-  (execute-query "order by mtime desc limit 2"))
-
 (defun basic-search-items (terms)
   "Simple search across album, artist and title using intersection of results on terms"
   (let ((query (items-query-string "WHERE lower(artist || ' ' || title) LIKE '%' || ? || '%'"))
