@@ -3,7 +3,8 @@
 (defpackage #:bbq-db
   (:use #:cl
         #:sqlite)
-  (:export #:with-db))
+  (:export #:with-db
+           #:add-song))
 
 (defpackage #:bbq
   (:use #:cl
