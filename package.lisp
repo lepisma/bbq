@@ -4,7 +4,9 @@
   (:use #:cl
         #:sqlite)
   (:export #:with-db
-           #:add-song))
+           #:make-song
+           #:add
+           #:present?))
 
 (defpackage #:bbq
   (:use #:cl
@@ -30,5 +32,6 @@
         #:trivia))
 
 (defpackage #:yt
-  (:use #:cl)
-  (:export #:get-id))
+  (:use #:cl
+        #:cl-strings)
+  (:export #:get-song))

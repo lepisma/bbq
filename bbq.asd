@@ -14,6 +14,9 @@
                #:cl-strings
                #:cl-yaml
                #:dexador
+               #:drakma ;; I should probably use one of these
+               #:lquery
+               #:plump
                #:serapeum
                #:sqlite
                #:trivia)

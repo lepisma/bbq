@@ -38,17 +38,12 @@
           (execute-to-list *db* "SELECT * FROM songs WHERE artist = ? AND title = ?" (song-artist s) (song-title s)))
       (error "song underspecified")))
 
-(defun add-song (artist title url &key album)
-  "Unconditionally add item in the database.
-
-TODO: This will change to take ids instead of url (which are raw https type) and
-have someone else work on getting those ids."
-  (let ((ytid (yt:get-id url)))
-    ;; HACK: basic heuristic to check for youtube links
-    (if (and (= (length ytid) 11) (string-not-equal ytid url))
-      (add-alist "songs" `(("artist" . ,artist)
-                           ("title" . ,title)
-                           ("mtime" . ,(serapeum:get-unix-time))
-                           ("url" . ,#?"yt:${ytid}")
-                           ("album" . ,album)))
-      (error "url (possibly) not from youtube"))))
+(defmethod add ((s song))
+  (if (and (song-artist s) (song-title s))
+      ;; There should be a struct to alist
+      (add-alist "songs" `(("artist" . ,(song-artist s))
+                           ("title" . ,(song-title s))
+                           ("mtime" . ,(song-mtime s))
+                           ("url" . ,(song-url s))
+                           ("album". ,(song-album s))))
+      (error "song underspecified")))
