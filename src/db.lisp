@@ -24,7 +24,7 @@
             (plcs (cl-strings:join (serapeum:repeat-sequence '("?") (length alist)) :separator ", ")))
         (apply #'execute-non-query *db* #?"INSERT INTO ${table} (${keys}) VALUES (${plcs})" (mapcar #'cdr alist)))))
 
-(defun add-song (artist title url &optional album)
+(defun add-song (artist title url &key album)
   "Unconditionally add item in the database.
 
 TODO: This will change to take ids instead of url (which are raw https type) and
