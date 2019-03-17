@@ -1,5 +1,10 @@
 ;;;; package.lisp
 
+(defpackage #:bbq-db
+  (:use #:cl
+        #:sqlite)
+  (:export #:with-db))
+
 (defpackage #:bbq
   (:use #:cl
         #:alexandria

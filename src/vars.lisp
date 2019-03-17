@@ -3,12 +3,6 @@
 (in-package #:bbq)
 (cl-interpol:enable-interpol-syntax)
 
-(defvar *db-path* (truename "~/.mpm.d/database")
-  "Path to mpm sqlite database")
-
-(defvar *db* nil
-  "Connection to db")
-
 (defvar *player-url* "http://127.0.0.1:6672"
   "Url for mpm-play server")
 
