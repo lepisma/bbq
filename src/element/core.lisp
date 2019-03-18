@@ -9,10 +9,10 @@
        ,@body)
      (setf (gethash ',name *elements*) (cons ,type #',name))))
 
-(defmacro deffilter (name (song) &body body)
-  `(defelement :filter ,name (,song)
+(defmacro deffilter (name (song &rest args) &body body)
+  `(defelement :filter ,name (,song ,@args)
      ,@body))
 
-(defmacro defsource (name () &body body)
-  `(defelement :source ,name ()
+(defmacro defsource (name (&rest args) &body body)
+  `(defelement :source ,name ,args
      ,@body))

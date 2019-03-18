@@ -54,8 +54,9 @@
                            ("album". ,(song-album s))))
       (error "song underspecified")))
 
-(defun all-songs ()
+(defun song-query (&optional (condition-str "") &rest condition-args)
+  "Use condition query to return songs."
   (with-db
-      (let ((items (execute-to-list *db* "SELECT id, artist, title, album, url, mtime FROM songs"))
-            (fields '(:id :artist :title :album :url :mtime)))
+      (let* ((fields '(:id :artist :title :album :url :mtime))
+             (items (apply #'execute-to-list *db* #?"SELECT id, artist, title, album, url, mtime FROM songs ${condition-str}" condition-args)))
         (mapcar (lambda (it) (apply #'make-song (interleave fields it))) items))))

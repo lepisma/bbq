@@ -11,7 +11,8 @@
            #:song-title
            #:song-url
            #:song-mtime
-           #:song-album))
+           #:song-album
+           #:song-query))
 
 (defpackage #:bbq-import
   (:use #:cl)
