@@ -17,6 +17,13 @@
   (:use #:cl)
   (:export #:from-url))
 
+(defpackage #:bbq-element
+  (:use #:cl)
+  (:export #:*elements*
+           #:defelement
+           #:defsource
+           #:deffilter))
+
 (defpackage #:bbq
   (:use #:cl
         #:alexandria

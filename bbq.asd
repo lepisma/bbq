@@ -28,6 +28,11 @@
     :components
     ((:file "vars")
      (:file "db")
+     (:module "element"
+      :serial t
+      :components ((:file "core")
+                   (:file "source")
+                   (:file "filter")))
      (:file "item")
      (:file "log")
      (:file "bbq")

@@ -21,6 +21,12 @@
             (plcs (cl-strings:join (serapeum:repeat-sequence '("?") (length alist)) :separator ", ")))
         (apply #'execute-non-query *db* #?"INSERT INTO ${table} (${keys}) VALUES (${plcs})" (mapcar #'cdr alist)))))
 
+(defun interleave (list1 list2 &optional acc)
+  "Interleave two lists. Assume equal length."
+  (if (or (null list1) (null list2))
+      acc
+      (interleave (cdr list1) (cdr list2) (append acc (list (car list1) (car list2))))))
+
 
 
 (defstruct song
@@ -47,3 +53,9 @@
                            ("url" . ,(song-url s))
                            ("album". ,(song-album s))))
       (error "song underspecified")))
+
+(defun all-songs ()
+  (with-db
+      (let ((items (execute-to-list *db* "SELECT id, artist, title, album, url, mtime FROM songs"))
+            (fields '(:id :artist :title :album :url :mtime)))
+        (mapcar (lambda (it) (apply #'make-song (interleave fields it))) items))))
