@@ -16,20 +16,15 @@
   (let ((page (plump:parse (drakma:http-request url))))
     (aref (lquery:$ page "title" (text)) 0)))
 
-(defun detect-metadata (page-title)
-  "Return cons of artist and title."
-  (let ((splits (mapcar #'clean (butlast (split page-title #\-)))))
-    (if (= (length splits) 2)
-        ;; This is probably artist - title pair
-        (apply #'cons splits)
-        ;; Let the user decide
-        (cons page-title page-title))))
-
-(defun get-song (url)
-  "Make song struct from the url."
-  (let* ((title (get-title url))
-         (artist-title (detect-metadata title)))
-    (bbq-db:make-song
-     :artist (car artist-title)
-     :title (cdr artist-title)
-     :url #?"yt:${(get-id url)}")))
+(defun get-metadata (url)
+  "Return metadata for the song."
+  (let* ((page-title (get-title url))
+         (splits (mapcar #'clean (butlast (split page-title #\-))))
+         (artist-title (if (= (length splits) 2)
+                           ;; This is probably artist - title pair
+                           (apply #'cons splits)
+                           ;; Let the user decide
+                           (cons page-title page-title))))
+    `(:artist ,(car artist-title)
+      :title ,(cdr artist-title)
+      :url ,#?"yt:${(get-id url)}")))

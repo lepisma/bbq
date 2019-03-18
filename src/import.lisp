@@ -18,11 +18,13 @@
             (bbq-db:song-title s) title)
       s)))
 
+(defun from-yt-url (url)
+  (confirm-song (apply #'bbq-db:make-song (yt:get-metadata url))))
+
 (defun from-url (url)
   "Import song from supplied url."
-  (cond ((yt:url-valid? url)
-         (let ((s (confirm-song (yt:get-song url))))
-           (if (bbq-db:present? s)
-               (error #?"song ${s} already present")
-               (bbq-db:add s))))
-        (t (error #?"url ${url} not supported"))))
+  (let ((s (cond ((yt:url-valid? url) (from-yt-url url))
+                 (t (error #?"url ${url} not supported")))))
+    (if (bbq-db:present? s)
+        (error #?"song ${s} already present")
+        (bbq-db:add s))))

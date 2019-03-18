@@ -43,5 +43,5 @@
 (defpackage #:yt
   (:use #:cl
         #:cl-strings)
-  (:export #:get-song
+  (:export #:get-metadata
            #:url-valid?))
