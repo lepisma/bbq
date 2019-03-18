@@ -6,11 +6,6 @@
 (defvar *player-url* "http://127.0.0.1:6672"
   "Url for mpm-play server")
 
-(defun init-config (config-path)
-  (let ((config (yaml:parse config-path)))
-    (setf bbq-db::*db-path* (truename (gethash "database" config)))
-    (setf *player-url* #?"http://127.0.0.1:${(gethash "port" (gethash "player" config))}")))
-
 (defun player-request (route &optional post-data)
   "Send request to mpm-play"
   (let ((base-url #?"${*player-url*}/${route}"))
