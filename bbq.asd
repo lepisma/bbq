@@ -14,7 +14,7 @@
                #:cl-strings
                #:cl-yaml
                #:dexador
-               #:drakma ;; I should probably use one of these
+               #:drakma ;; I should probably use one of dexador, drakma
                #:lquery
                #:plump
                #:serapeum
@@ -33,8 +33,7 @@
       :components ((:file "core")
                    (:file "source")
                    (:file "filter")))
-     (:file "item")
      (:file "log")
      (:file "bbq")
      (:module "utils" :components ((:file "yt")))
-     (:file "importer")))))
+     (:file "import")))))
