@@ -1,10 +1,6 @@
-;;;; Variables for bbq
+;; Functions for cli usage
 
 (in-package #:bbq)
-(cl-interpol:enable-interpol-syntax)
-
-(defvar *player-url* "http://127.0.0.1:6672"
-  "Url for mpm-play server")
 
 (defparameter known-commands
   '(":new" ":cap" ":next" ":prev" ":toggle" ":state" ":repeat")

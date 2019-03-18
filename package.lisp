@@ -1,5 +1,11 @@
 ;;;; package.lisp
 
+(defpackage #:yt
+  (:use #:cl
+        #:cl-strings)
+  (:export #:get-metadata
+           #:url-valid?))
+
 (defpackage #:bbq-db
   (:use #:cl
         #:sqlite)
@@ -14,9 +20,10 @@
            #:song-album
            #:song-query))
 
-(defpackage #:bbq-import
-  (:use #:cl)
-  (:export #:from-url))
+(defpackage #:bbq-log
+  (:use #:cl
+        #:cl-strings
+        #:trivia))
 
 (defpackage #:bbq-element
   (:use #:cl)
@@ -25,31 +32,18 @@
            #:defsource
            #:deffilter))
 
+(defpackage #:bbq-import
+  (:use #:cl)
+  (:export #:from-url))
+
 (defpackage #:bbq
   (:use #:cl
         #:alexandria
         #:anaphora
         #:cl-strings
         #:cl-cut
-        #:cl-arrows
-        #:serapeum)
+        #:cl-arrows)
   (:shadowing-import-from #:cl-strings
    :starts-with :ends-with :parse-number :split)
   (:shadowing-import-from #:cl-arrows
-   :->)
-  (:shadowing-import-from #:serapeum
-   :scan)
-  (:export #:dispatch-command
-           #:known-commands
-           #:known-flags))
-
-(defpackage #:bbq-log
-  (:use #:cl
-        #:cl-strings
-        #:trivia))
-
-(defpackage #:yt
-  (:use #:cl
-        #:cl-strings)
-  (:export #:get-metadata
-           #:url-valid?))
+   :->))

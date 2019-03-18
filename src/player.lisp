@@ -3,6 +3,9 @@
 (in-package #:bbq)
 (cl-interpol:enable-interpol-syntax)
 
+(defvar *player-url* "http://127.0.0.1:6672"
+  "Url for mpm-play server")
+
 (defun init-config (config-path)
   (let ((config (yaml:parse config-path)))
     (setf *db-path* (truename (gethash "database" config)))
