@@ -1,18 +1,18 @@
 (in-package #:bbq-element)
 
-(defvar *elements* nil
-  "List of registered elements")
+(defvar *elements* (make-hash-table)
+  "Map of registered elements")
 
-(defmacro defelement (name (&rest args) &body body)
+(defmacro defelement (type name (&rest args) &body body)
   `(progn
      (defun ,name ,args
        ,@body)
-     (push ',name *elements*)))
+     (setf (gethash ',name *elements*) (cons ,type #',name))))
 
 (defmacro deffilter (name (song) &body body)
-  `(defelement ,name (,song)
+  `(defelement :filter ,name (,song)
      ,@body))
 
 (defmacro defsource (name () &body body)
-  `(defelement ,name ()
+  `(defelement :source ,name ()
      ,@body))
