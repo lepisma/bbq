@@ -65,21 +65,6 @@
             (parse-pm-query (cdr rest-terms) next-op (cons current-terms p-acc) m-acc)
             (parse-pm-query (cdr rest-terms) next-op p-acc (cons current-terms m-acc))))))
 
-(defun new-items (n)
-  "Return n new items"
-  (sqlite:execute-to-list *db* (items-query-string "ORDER BY mtime DESC LIMIT ?") n))
-
-(defun artist-cap-items (n)
-  "Return items with 'artist items' <= n"
-  (sqlite:execute-to-list *db* (items-query-string "WHERE artist IN (SELECT artist FROM songs GROUP BY artist HAVING count(*) <= ?)") n))
-
-(defun cmd-search-items (terms)
-  "Use cmd to figure out results"
-  (let ((cmd (car terms)))
-    (cond ((string= cmd ":new") (new-items (parse-integer (cadr terms))))
-          ((string= cmd ":cap") (artist-cap-items (parse-integer (cadr terms))))
-          (t (basic-search-items terms)))))
-
 (defun dispatch-search (terms)
   (multiple-value-bind (p-groups m-groups) (parse-pm-query (sanitize-pm-query terms))
     (let ((positives (reduce (cut union <> <> :key #'car) (mapcar #'cmd-search-items p-groups)))
