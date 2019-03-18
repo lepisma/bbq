@@ -4,18 +4,8 @@
 exec ros -Q -- $0 "$@"
 |#
 
-(ql:quickload '(:bbq :cl-cut :serapeum) :silent t)
-(import '(serapeum:partition cl-cut:cut))
-
-(defun parse-args (argv commands flags)
-  "Return parsed (values cmd flags terms)"
-  (let ((cmd (car (member (car argv) commands :test #'string=))))
-    (multiple-value-bind (fs as)
-        (partition (cut member <> flags :test #'string=)
-                   (if cmd (cdr argv) argv))
-      (values cmd fs as))))
+(ql:quickload '(:bbq) :silent t)
 
 (defun main (&rest argv)
   (setf *random-state* (make-random-state t))
-  (multiple-value-bind (cmd flags terms) (parse-args argv bbq:known-commands bbq:known-flags)
-    (bbq:dispatch-command cmd flags terms)))
+  (print "cli in developement"))
