@@ -12,9 +12,13 @@
 (defun url-valid? (url)
   (ppcre:scan "^https?:\/\/(www\.)?(youtube\.co)|(youtu\.be)" url))
 
+(defun clean-title (title)
+  "Remove the kind of junk usually present in youtube videos."
+  (ppcre:regex-replace-all "(?i) *\\(official ?(video|audio)\\)" title ""))
+
 (defun get-title (url)
   (let ((page (plump:parse (drakma:http-request url))))
-    (aref (lquery:$ page "title" (text)) 0)))
+    (clean-title (aref (lquery:$ page "title" (text)) 0))))
 
 (defun get-metadata (url)
   "Return metadata for the song."
