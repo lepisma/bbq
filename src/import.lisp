@@ -8,6 +8,16 @@
     (swap-artist-and-title ()
       (rotatef (bbq-db:song-artist s) (bbq-db:song-title s))
       s)
+    (edit-artist (artist)
+      :report "Input artist"
+      :interactive (lambda () (list (progn (format t "Enter artist: ") (read-line))))
+      (setf (bbq-db:song-artist s) artist)
+      s)
+    (edit-title (title)
+      :report "Input title"
+      :interactive (lambda () (list (progn (format t "Enter title: ") (read-line))))
+      (setf (bbq-db:song-title s) title)
+      s)
     (edit-values (artist title)
       :report "Input artist and title"
       :interactive (lambda ()
