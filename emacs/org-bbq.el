@@ -38,16 +38,12 @@
 (org-add-link-type "bbq" #'org-bbq-play #'org-bbq-export)
 
 (defun org-bbq--yt-search (term)
-  "Search for term in youtube and return first youtube url.
-Doesn't work exactly because of a useless right div in youtube."
-  (let ((search-url (format "https://youtube.com/results?search_query=%s" (url-hexify-string term)))
-        video-id)
-    (with-current-buffer (url-retrieve-synchronously search-url)
-      (goto-char (point-min))
-      (search-forward "watch?v=")
-      (setq video-id (buffer-substring-no-properties (point) (+ 11 (point))))
-      (kill-buffer))
-    video-id))
+  "Search for term in youtube and return ids. I am using yts
+script which is in my config here ->
+https://github.com/lepisma/cfg/blob/master/scripts/bin/yts"
+  (with-temp-buffer
+    (call-process "yts" nil t nil term)
+    (s-split "\n" (s-trim (buffer-string)))))
 
 (defun org-bbq--format-yt (yid)
   (format
@@ -63,7 +59,7 @@ Doesn't work exactly because of a useless right div in youtube."
 (defun org-bbq--format-item (item)
   (let* ((title (cdr (assoc "title" item)))
          (artist (cdr (assoc "artist" item)))
-         (yid (org-bbq--yt-search (concat title " " artist))))
+         (yid (car (org-bbq--yt-search (concat title " " artist)))))
     (format "<div class=\"bbq-item\">
                %s
                <div class=\"bbq-item-info\">%s - <em>%s</em></div>
