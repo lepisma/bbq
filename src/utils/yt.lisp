@@ -1,6 +1,9 @@
 (in-package #:yt)
 (cl-interpol:enable-interpol-syntax)
 
+(defparameter *ytdl-bin* "~/.pyenv/shims/youtube-dl"
+  "Path to ytdl. I shouldn't be needing to specify this to be honest.")
+
 (defun get-id (url)
   "Return 11 char youtube identifier. From https://gist.github.com/takien/4077195"
   (let* ((url (ppcre:regex-replace-all "(>|<)" url ""))
@@ -19,6 +22,10 @@
 (defun get-title (url)
   (let ((page (plump:parse (drakma:http-request url))))
     (clean-title (aref (lquery:$ page "title" (text)) 0))))
+
+(defun get-audio-stream (url)
+  "Return best audio stream url for given youtube-url"
+  (clean (inferior-shell:run/s `(,(pathname *ytdl-bin*) ,url -g -x --audio-format best)) :char #\Linefeed))
 
 (defun get-metadata (url)
   "Return metadata for the song."
