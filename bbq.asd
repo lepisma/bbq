@@ -15,6 +15,7 @@
                #:cl-yaml
                #:dexador
                #:drakma ;; I should probably use one of dexador, drakma
+               #:inferior-shell
                #:lquery
                #:plump
                #:serapeum

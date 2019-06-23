@@ -29,7 +29,7 @@
       s)))
 
 (defun from-yt-url (url)
-  (confirm-song (apply #'bbq-db:make-song (yt:get-metadata url))))
+  (confirm-song (apply #'bbq-db:make-song (yt:url-metadata url))))
 
 (defun from-url (url)
   "Import song from supplied url."

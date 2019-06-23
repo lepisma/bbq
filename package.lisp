@@ -3,8 +3,9 @@
 (defpackage #:yt
   (:use #:cl
         #:cl-strings)
-  (:export #:get-metadata
-           #:url-valid?))
+  (:export #:url-metadata
+           #:url-valid?
+           #:text-search))
 
 (defpackage #:bbq-db
   (:use #:cl

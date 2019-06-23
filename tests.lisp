@@ -15,4 +15,4 @@
                   (cons "https://www.youtube.com/watch?v=BGL22PTIOAM&feature=g-all-xit" "BGL22PTIOAM")
                   (cons "BGL22PTIOAM" "BGL22PTIOAM"))))
   (loop for url-map in maps
-        do (is (yt:get-id (car url-map)) (cdr url-map))))
+        do (is (yt:url-id (car url-map)) (cdr url-map))))
