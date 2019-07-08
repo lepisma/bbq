@@ -6,6 +6,21 @@ exec ros -Q -- $0 "$@"
 
 (ql:quickload '(:bbq) :silent t)
 
-(defun main (&rest argv)
+(defpackage #:bbq-cli.1234
+  (:use #:cl #:bbq))
+
+(in-package #:bbq-cli.1234)
+
+(defun main (&rest args)
   (setf *random-state* (make-random-state t))
-  (print "cli in developement"))
+  (let* ((pargs (bbq::parse-args args))
+         (options (serapeum:assocadr :options pargs))
+         (action (serapeum:assocadr :action pargs))
+         (query (serapeum:assocadr :query pargs)))
+    (cond
+      ((member :help options) (print (bbq::generate-help)))
+      (action
+       (case action
+         (:serve (bbq::server-start))
+         (t (bbq::run action query options))))
+      (t (bbq::run action query options)))))
