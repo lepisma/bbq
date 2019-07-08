@@ -7,6 +7,7 @@
   :depends-on (#:alexandria
                #:anaphora
                #:cffi
+               #:clack
                #:cl-arrows
                #:cl-cut
                #:cl-interpol
@@ -17,8 +18,8 @@
                #:dexador
                #:drakma ;; I should probably use one of dexador, drakma
                #:inferior-shell
-               #:lucerne
                #:lquery
+               #:ningle
                #:plump
                #:serapeum
                #:sqlite

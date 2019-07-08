@@ -3,7 +3,7 @@
 (in-package #:bbq)
 (cl-interpol:enable-interpol-syntax)
 
-(defparameter *cli-options* '(:list :help)
+(defparameter *cli-options* '(:list :help :sexp)
   "Options for cli. These are reflected in cli as --list, --help kind arguments
   anywhere in the list of all arguments provided. At the moment, we only support
   parameter less options.")

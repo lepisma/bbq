@@ -46,8 +46,7 @@
         #:anaphora
         #:cl-strings
         #:cl-cut
-        #:cl-arrows
-        #:lucerne)
+        #:cl-arrows)
   (:shadowing-import-from #:cl-strings
    :starts-with :ends-with :parse-number :split)
   (:shadowing-import-from #:cl-arrows
