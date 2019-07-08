@@ -28,7 +28,7 @@ https://github.com/lepisma/cfg/blob/master/scripts/bin/yts"
   (ppcre:regex-replace-all "(?i) *\\(official ?(video|audio)\\)" title ""))
 
 (defun url-title (url)
-  (let ((page (plump:parse (drakma:http-request url))))
+  (let ((page (plump:parse (dex:get url))))
     (clean-title (aref (lquery:$ page "title" (text)) 0))))
 
 (defun url-audio-stream (url)

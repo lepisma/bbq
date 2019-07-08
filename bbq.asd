@@ -16,7 +16,6 @@
                #:cl-strings
                #:cl-yaml
                #:dexador
-               #:drakma ;; I should probably use one of dexador, drakma
                #:inferior-shell
                #:lquery
                #:ningle
