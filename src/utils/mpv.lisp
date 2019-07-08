@@ -70,9 +70,10 @@
   (if (paused? mp) (play mp) (pause mp)))
 
 (defmethod play-path ((mp mpv-player) path)
-  (with-foreign-strings ((cmd "loadfile") (url path))
-    (with-foreign-array (args (make-array 2 :initial-contents (list cmd url)) '(:array :string 2))
-      (mpv-command (handle mp) args))))
+  (with-foreign-object (args :string 2)
+    (setf (mem-aref args :string 0) "loadfile"
+          (mem-aref args :string 1) path)
+    (mpv-command (handle mp) args)))
 
 (defmethod played? ((mp mpv-player))
   "Tell if the current track is `played' according to last.fm's scrobbling
