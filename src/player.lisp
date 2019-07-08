@@ -149,8 +149,8 @@ can be queried."
         (declare (ignore params))
         (respond-json (player-state *player*))))
 
-(defun server-start ()
-  (clack:clackup *app* :port *port* :use-thread nil))
+(defun server-start (&optional background)
+  (clack:clackup *app* :port *port* :use-thread background))
 
 ;;; Client functions
 
