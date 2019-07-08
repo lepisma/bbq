@@ -1,11 +1,12 @@
 ;;;; bbq.asd
 
 (defsystem #:bbq
-  :description "Client for mpm-play"
+  :description "Music player"
   :author "Abhinav Tushar <lepisma@fastmail.com>"
   :license "GPLv3"
   :depends-on (#:alexandria
                #:anaphora
+               #:cffi
                #:cl-arrows
                #:cl-cut
                #:cl-interpol
@@ -16,6 +17,7 @@
                #:dexador
                #:drakma ;; I should probably use one of dexador, drakma
                #:inferior-shell
+               #:lucerne
                #:lquery
                #:plump
                #:serapeum
@@ -27,7 +29,7 @@
     :depends-on ("package")
     :serial t
     :components
-    ((:module "utils" :components ((:file "yt")))
+    ((:module "utils" :components ((:file "mpv") (:file "yt")))
      (:file "db")
      (:file "log")
      (:module "element"
