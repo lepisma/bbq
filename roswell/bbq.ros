@@ -21,6 +21,6 @@ exec ros -Q -- $0 "$@"
       ((member :help options) (print (bbq::generate-help)))
       (action
        (case action
-         (:serve (bbq::server-start))
+         (:serve (bbq::start-server))
          (t (bbq::run action query options))))
       (t (bbq::run action query options)))))

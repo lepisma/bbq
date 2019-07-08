@@ -39,19 +39,25 @@ can be queried."
              :initarg :playlist
              :initform nil
              :documentation "List of song items that represent current playlist.")
-   (sleep :initarg :sleep
+   (sleep :accessor sleep-state
+          :initarg :sleep
           :initform nil
           :documentation "Number of items to wait for before going in sleep.")
-   (cycle :initarg :cycle
+   (cycle :accessor cycle-state
+          :initarg :cycle
           :initform nil
           :type symbol
           :documentation "Repeat behavior")
-   (index :initarg :index
-          :initform nil
-          :documentation "Current index in the playlist")
+   (current-index :accessor current-index
+                  :initarg :current-index
+                  :initform nil
+                  :documentation "Current index in the playlist")
    (mp :accessor mp
        :initarg :mp
-       :documentation "mpv instance"))
+       :documentation "mpv instance")
+   (should-play? :accessor should-play?
+                 :initform nil
+                 :documentation "Internal flag for keeping track of things."))
   (:documentation "Main player that talks to the underlying tool, mpv at the
   moment. Also this is basically a clone of mpm-play's main object and so is
   just trying to copy its behavior instead of acting more correctly."))
@@ -59,41 +65,84 @@ can be queried."
 (defun make-bbq-player ()
   (make-instance 'bbq-player :mp (mpv::make-mpv-player)))
 
+(define-condition player-empty (error) ()
+  (:report (lambda (condition stream)
+             (declare (ignore condition))
+             (format stream "Player is empty. You need to add items before performing actions.")))
+  (:documentation "Player empty condition"))
+
+(defmethod empty? ((p bbq-player))
+  "Tell if the player is active. A non empty playlist means activity."
+  (or (null (current-index p))
+      (null (playlist p))))
+
+(defmethod need-songs ((p bbq-player))
+  (when (empty? p)
+    (error 'player-empty)))
+
 (defmethod current-song ((p bbq-player))
   "Return current song for the player."
-  (with-slots (index playlist) p
-    (when (and index playlist)
-      (nth index playlist))))
+  (need-songs p)
+  (nth (current-index p) (playlist p)))
 
 (defmethod player-play ((p bbq-player))
   "Play current item in playlist. We assume that index and playlist both are
   valid."
+  (need-songs p)
   (let ((url (playback-url (current-song p))))
-    (mpv::play-path (mp p) url)))
+    (mpv::play-path (mp p) url)
+    (setf (should-play? p) t)))
 
 (defmethod player-reset ((p bbq-player))
-  (with-slots (index playlist) p
-    (setf index nil playlist nil)))
+  (setf (current-index p) nil
+        (playlist p) nil
+        (should-play? p) nil))
 
 (defmethod player-enqueue ((p bbq-player) songs)
-  (with-slots (playlist) p
-    (appendf playlist songs)))
+  (appendf (playlist p) songs)
+  (when (null (current-index p))
+    (setf (current-index p) 0)))
 
 (defmethod player-next ((p bbq-player))
-  ())
+  "Go to the next item and play."
+  (need-songs p)
+  (with-slots (current-index playlist) p
+    (incf current-index)
+    (when (>= current-index (length playlist))
+      (setf current-index 0))
+    (player-play p)))
 
 (defmethod player-prev ((p bbq-player))
-  ())
+  "Go to the previous item and play."
+  (need-songs p)
+  (with-slots (current-index playlist) p
+    (decf current-index)
+    (when (<= current-index 0)
+      (setf current-index (- (length playlist) 1)))
+    (player-play p)))
 
 (defmethod player-toggle ((p bbq-player))
-  (mpv::toggle (mp p)))
+  (mpv::toggle (mp p))
+  (setf (should-play? p) (not (should-play? p))))
 
 (defmethod player-state ((p bbq-player))
-  ())
+  (let ((vars `(("repeat" . ,(cycle-state p))
+                ("sleep" . ,(sleep-state p))
+                ("total" . ,(length (playlist p)))
+                ("current" . ,(current-index p)))))
+    (if (empty? p)
+        `(("vars" . ,vars) ("item" . nil))
+        (let ((s (current-song p)))
+          `(("vars" . ,vars) ("item" . (("id" . ,(bbq-db::song-id s))
+                                        ("title" . ,(bbq-db::song-title s))
+                                        ("url" . ,(bbq-db::song-url s))
+                                        ("artist" . ,(bbq-db::song-artist s))
+                                        ("album" . ,(bbq-db::song-album s))
+                                        ("mtime" . ,(bbq-db::song-mtime s)))))))))
 
 ;;; Server stuff
 
-(defparameter *player* (make-bbq-player)
+(defparameter *player* nil
   "Global variable holding a player instance")
 
 (defvar *port* 6672
@@ -120,7 +169,7 @@ can be queried."
         (let ((songs (bbq-element::string-search (request-get params "query"))))
           (player-reset *player*)
           (player-enqueue *player* songs)
-          (setf (slot-value *player* 'index) 0)
+          (setf (current-index *player*) 0)
           (player-play *player*)
           (respond-json :ok))))
 
@@ -149,7 +198,8 @@ can be queried."
         (declare (ignore params))
         (respond-json (player-state *player*))))
 
-(defun server-start (&optional background)
+(defun start-server (&optional background)
+  (setf *player* (make-bbq-player))
   (clack:clackup *app* :port *port* :use-thread background))
 
 ;;; Client functions
