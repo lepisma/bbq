@@ -7,6 +7,9 @@
            #:url-valid?
            #:text-search))
 
+(defpackage #:mpv
+  (:use #:cl #:cffi))
+
 (defpackage #:bbq-db
   (:use #:cl
         #:sqlite)
@@ -43,7 +46,8 @@
         #:anaphora
         #:cl-strings
         #:cl-cut
-        #:cl-arrows)
+        #:cl-arrows
+        #:lucerne)
   (:shadowing-import-from #:cl-strings
    :starts-with :ends-with :parse-number :split)
   (:shadowing-import-from #:cl-arrows
