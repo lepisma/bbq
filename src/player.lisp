@@ -23,7 +23,7 @@ can be queried."
 
 (defmethod playback-url-yt-search ((s bbq-db::song))
   "Return stream url using youtube search."
-  (let ((search-string (format "~A ~A" (bbq-db:song-artist s) (bbq-db:song-title s))))
+  (let ((search-string (format nil "~A ~A" (bbq-db:song-artist s) (bbq-db:song-title s))))
     (yt::url-audio-stream (car (yt::text-search search-string)))))
 
 (defmethod playback-url ((s bbq-db::song))
