@@ -157,7 +157,6 @@ can be queried."
 (defun client-request (route &optional json-post-data)
   "Send request to mpm-play"
   (let ((base-url #?"http://localhost:${*port*}/${route}"))
-    (print base-url)
     (if json-post-data
         (dex:post base-url :content (cl-json:encode-json-to-string json-post-data)
                   :headers '(("Content-Type" . "application/json")))
