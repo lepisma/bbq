@@ -37,6 +37,18 @@
   url
   (mtime (serapeum:get-unix-time) :type integer))
 
+(defmethod to-alist ((s song) &optional with-id)
+  "Convert given song to an alist. `with-id' tells whether to also expect and
+export the `id' key."
+  (let ((base-alist `(("title" . ,(song-title s))
+                      ("url" . ,(song-url s))
+                      ("artist" . ,(song-artist s))
+                      ("album" . ,(song-album s))
+                      ("mtime" . ,(song-mtime s)))))
+    (if with-id
+        (cons (cons "id" (song-id s)) base-alist)
+        base-alist)))
+
 (defmethod present? ((s song))
   "Tell if the given song is present in the db."
   (if (and (song-artist s) (song-title s))
@@ -46,12 +58,7 @@
 
 (defmethod add ((s song))
   (if (and (song-artist s) (song-title s))
-      ;; There should be a struct to alist
-      (add-alist "songs" `(("artist" . ,(song-artist s))
-                           ("title" . ,(song-title s))
-                           ("mtime" . ,(song-mtime s))
-                           ("url" . ,(song-url s))
-                           ("album". ,(song-album s))))
+      (add-alist "songs" (to-alist s))
       (error "song underspecified")))
 
 (defun song-query (&optional (condition-str "") &rest condition-args)

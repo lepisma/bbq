@@ -132,13 +132,7 @@ can be queried."
                 ("current" . ,(current-index p)))))
     (if (empty? p)
         `(("vars" . ,vars) ("item" . nil))
-        (let ((s (current-song p)))
-          `(("vars" . ,vars) ("item" . (("id" . ,(bbq-db::song-id s))
-                                        ("title" . ,(bbq-db::song-title s))
-                                        ("url" . ,(bbq-db::song-url s))
-                                        ("artist" . ,(bbq-db::song-artist s))
-                                        ("album" . ,(bbq-db::song-album s))
-                                        ("mtime" . ,(bbq-db::song-mtime s)))))))))
+        `(("vars" . ,vars) ("item" . (bbq-db::to-alist (current-song p) t))))))
 
 ;;; Server stuff
 
