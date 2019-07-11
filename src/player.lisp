@@ -126,13 +126,15 @@ can be queried."
   (setf (should-play? p) (not (should-play? p))))
 
 (defmethod player-state ((p bbq-player))
+  "Return current state variables of the player. Mostly useful for outside
+systems trying to interact."
   (let ((vars `(("repeat" . ,(cycle-state p))
                 ("sleep" . ,(sleep-state p))
                 ("total" . ,(length (playlist p)))
                 ("current" . ,(current-index p)))))
     (if (empty? p)
         `(("vars" . ,vars) ("item" . nil))
-        `(("vars" . ,vars) ("item" . (bbq-db::to-alist (current-song p) t))))))
+        `(("vars" . ,vars) ("item" . ,(bbq-db::to-alist (current-song p) t))))))
 
 ;;; Server stuff
 
