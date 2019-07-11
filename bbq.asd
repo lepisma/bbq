@@ -6,6 +6,7 @@
   :license "GPLv3"
   :depends-on (#:alexandria
                #:anaphora
+               #:bordeaux-threads
                #:cffi
                #:clack
                #:cl-arrows

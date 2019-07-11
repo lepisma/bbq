@@ -80,5 +80,8 @@
   definitions. NOTE: We don't consider null duration at the moment."
   (> (time-pos mp) (min (* 4 60) (/ (duration mp) 2))))
 
-;; (setf mp (make-mpv-player))
-;; (play-path mp "/home/lepisma/.tofish/d/Music/.cache.d/1072")
+(defmethod idle? ((mp mpv-player))
+  (string= "yes" (mpv-get-property-string (handle mp) "idle-active")))
+
+(defmethod shutdown ((mp mpv-player))
+  (mpv-destroy (handle mp)))

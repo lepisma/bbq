@@ -55,6 +55,14 @@ can be queried."
    (mp :accessor mp
        :initarg :mp
        :documentation "mpv instance")
+   (lock :accessor lock
+         :initform (bt:make-lock)
+         :documentation "Lock for metadata and other updates")
+   (poll-thread :accessor poll-thread
+                :initform nil
+                :documentation "Thread for polling")
+   (alive? :accessor alive?
+           :initform t)
    (should-play? :accessor should-play?
                  :initform nil
                  :documentation "Internal flag for keeping track of things."))
@@ -63,7 +71,14 @@ can be queried."
   just trying to copy its behavior instead of acting more correctly."))
 
 (defun make-bbq-player ()
-  (make-instance 'bbq-player :mp (mpv::make-mpv-player)))
+  (let ((player (make-instance 'bbq-player :mp (mpv::make-mpv-player))))
+    (setf (poll-thread player) (bt:make-thread (lambda () (poll-loop player)) :name "bbq-player-poll"))
+    player))
+
+(defmethod shutdown ((p bbq-player))
+  (setf (alive? p) nil)
+  (bt:join-thread (poll-thread p))
+  (mpv::shutdown (mp p)))
 
 (define-condition player-empty (error) ()
   (:report (lambda (condition stream)
@@ -85,7 +100,20 @@ can be queried."
   (need-songs p)
   (nth (current-index p) (playlist p)))
 
-(defmethod player-play ((p bbq-player))
+(defmethod poll-loop ((p bbq-player))
+  "Loop for checking the player state and acting if needed."
+  (loop
+    while (alive? p)
+    do (progn
+         (sleep 0.1)
+         (bt:with-lock-held ((lock p))
+           (when (should-play? p)
+             (cond
+               ((mpv::idle? (mp p)) (next p))))))))
+               ;; ((paused? p) (toggle p))
+               ;; ((playing? p) (princ-to-string "TODO: call mark-played"))))))))
+
+(defmethod play-current ((p bbq-player))
   "Play current item in playlist. We assume that index and playlist both are
   valid."
   (need-songs p)
@@ -93,39 +121,39 @@ can be queried."
     (mpv::play-path (mp p) url)
     (setf (should-play? p) t)))
 
-(defmethod player-reset ((p bbq-player))
+(defmethod reset ((p bbq-player))
   (setf (current-index p) nil
         (playlist p) nil
         (should-play? p) nil))
 
-(defmethod player-enqueue ((p bbq-player) songs)
+(defmethod enqueue ((p bbq-player) songs)
   (appendf (playlist p) songs)
   (when (null (current-index p))
     (setf (current-index p) 0)))
 
-(defmethod player-next ((p bbq-player))
+(defmethod next ((p bbq-player))
   "Go to the next item and play."
   (need-songs p)
   (with-slots (current-index playlist) p
     (incf current-index)
     (when (>= current-index (length playlist))
       (setf current-index 0))
-    (player-play p)))
+    (play-current p)))
 
-(defmethod player-prev ((p bbq-player))
+(defmethod prev ((p bbq-player))
   "Go to the previous item and play."
   (need-songs p)
   (with-slots (current-index playlist) p
     (decf current-index)
     (when (<= current-index 0)
       (setf current-index (- (length playlist) 1)))
-    (player-play p)))
+    (play-current p)))
 
-(defmethod player-toggle ((p bbq-player))
+(defmethod toggle ((p bbq-player))
   (mpv::toggle (mp p))
   (setf (should-play? p) (not (should-play? p))))
 
-(defmethod player-state ((p bbq-player))
+(defmethod state ((p bbq-player))
   "Return current state variables of the player. Mostly useful for outside
 systems trying to interact."
   (let ((vars `(("repeat" . ,(cycle-state p))
@@ -145,6 +173,7 @@ systems trying to interact."
   "Port to listen at for the server")
 
 (defparameter *app* (make-instance 'ningle:<app>))
+(defparameter *clack-server* nil)
 
 (defun respond-json (content)
   (appendf (lack.response:response-headers ningle:*response*)
@@ -163,22 +192,22 @@ systems trying to interact."
       (lambda (params)
         "Here we expect a `query' string for queuing items."
         (let ((songs (bbq-element::string-search (request-get params "query"))))
-          (player-reset *player*)
-          (player-enqueue *player* songs)
+          (reset *player*)
+          (enqueue *player* songs)
           (setf (current-index *player*) 0)
-          (player-play *player*)
+          (play-current *player*)
           (respond-json :ok))))
 
 (setf (ningle:route *app* "/next")
       (lambda (params)
         (declare (ignore params))
-        (player-next *player*)
+        (next *player*)
         (respond-json :ok)))
 
 (setf (ningle:route *app* "/prev")
       (lambda (params)
         (declare (ignore params))
-        (player-prev *player*)
+        (prev *player*)
         (respond-json :ok)))
 
 ;; TODO Skipping seek, sleep, cycle for now
@@ -186,17 +215,23 @@ systems trying to interact."
 (setf (ningle:route *app* "/toggle")
       (lambda (params)
         (declare (ignore params))
-        (player-toggle *player*)
+        (toggle *player*)
         (respond-json :ok)))
 
 (setf (ningle:route *app* "/state")
       (lambda (params)
         (declare (ignore params))
-        (respond-json (player-state *player*))))
+        (respond-json (state *player*))))
 
 (defun start-server (&optional background)
   (setf *player* (make-bbq-player))
-  (clack:clackup *app* :port *port* :use-thread background))
+  (setf *clack-server* (clack:clackup *app* :port *port* :use-thread background)))
+
+(defun stop-server ()
+  (clack:stop *clack-server*)
+  (shutdown *player*)
+  (setf *player* nil
+        *clack-server* nil))
 
 ;;; Client functions
 
