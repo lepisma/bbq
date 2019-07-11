@@ -182,46 +182,37 @@ systems trying to interact."
 (defun request-get (params key)
   (serapeum:assocdr key params :test #'string=))
 
-(setf (ningle:route *app* "/")
-      (lambda (params)
-        (declare (ignore params))
-        (respond-json :hello)))
+(defmacro r/ (route-args &rest body)
+  (let ((path (if (stringp route-args) (list route-args) route-args)))
+    `(setf (ningle:route *app* ,@path)
+           (lambda (params)
+             (respond-json (progn ,@body))))))
 
-(setf (ningle:route *app* "/clear")
-      (lambda (params)
-        (declare (ignore params))
-        (reset *player*)
-        (respond-json :ok)))
+(r/ "/" :hello)
 
-(setf (ningle:route *app* "/add" :method :POST)
-      (lambda (params)
-        "Here we expect a `query' string for queuing items."
-        (let ((songs (bbq-element::string-search (request-get params "query"))))
-          (enqueue *player* songs)
-          (respond-json :ok))))
+(r/ "/clear"
+    (reset *player*)
+    :ok)
 
-(setf (ningle:route *app* "/next")
-      (lambda (params)
-        (declare (ignore params))
-        (next *player*)
-        (respond-json :ok)))
+(r/ ("/add" :method :POST)
+    (let ((songs (bbq-element::string-search (request-get params "query"))))
+      (enqueue *player* songs)
+      :ok))
 
-(setf (ningle:route *app* "/prev")
-      (lambda (params)
-        (declare (ignore params))
-        (prev *player*)
-        (respond-json :ok)))
+(r/ "/next"
+    (next *player*)
+    :ok)
 
-(setf (ningle:route *app* "/toggle")
-      (lambda (params)
-        (declare (ignore params))
-        (toggle *player*)
-        (respond-json :ok)))
+(r/ "/prev"
+    (prev *player*)
+    :ok)
 
-(setf (ningle:route *app* "/state")
-      (lambda (params)
-        (declare (ignore params))
-        (respond-json (state *player*))))
+(r/ "/toggle"
+    (toggle *player*)
+    :ok)
+
+(r/ "/state"
+    (state *player*))
 
 (defun start-server (&optional background)
   (setf *player* (make-bbq-player))
