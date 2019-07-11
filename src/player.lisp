@@ -165,15 +165,14 @@ systems trying to interact."
         `(("vars" . ,vars) ("item" . ,(bbq-db::to-alist (current-song p) t))))))
 
 ;;; Server stuff
-
 (defparameter *player* nil
   "Global variable holding a player instance")
-
-(defvar *port* 6672
+(defparameter *port* 6672
   "Port to listen at for the server")
-
-(defparameter *app* (make-instance 'ningle:<app>))
-(defparameter *clack-server* nil)
+(defparameter *app* (make-instance 'ningle:<app>)
+  "Ningle application")
+(defparameter *clack-server* nil
+  "Variable holding clack server for graceful shutdowns etc.")
 
 (defun respond-json (content)
   (appendf (lack.response:response-headers ningle:*response*)
@@ -188,14 +187,17 @@ systems trying to interact."
         (declare (ignore params))
         (respond-json :hello)))
 
+(setf (ningle:route *app* "/clear")
+      (lambda (params)
+        (declare (ignore params))
+        (reset *player*)
+        (respond-json :ok)))
+
 (setf (ningle:route *app* "/add" :method :POST)
       (lambda (params)
         "Here we expect a `query' string for queuing items."
         (let ((songs (bbq-element::string-search (request-get params "query"))))
-          (reset *player*)
           (enqueue *player* songs)
-          (setf (current-index *player*) 0)
-          (play-current *player*)
           (respond-json :ok))))
 
 (setf (ningle:route *app* "/next")
@@ -209,8 +211,6 @@ systems trying to interact."
         (declare (ignore params))
         (prev *player*)
         (respond-json :ok)))
-
-;; TODO Skipping seek, sleep, cycle for now
 
 (setf (ningle:route *app* "/toggle")
       (lambda (params)
@@ -234,7 +234,6 @@ systems trying to interact."
         *clack-server* nil))
 
 ;;; Client functions
-
 (defun client-request (route &optional json-post-data)
   "Send request to mpm-play"
   (let ((base-url #?"http://localhost:${*port*}/${route}"))
@@ -243,7 +242,7 @@ systems trying to interact."
                   :headers '(("Content-Type" . "application/json")))
         (dex:get base-url))))
 
-(defun client-reset-and-play (query)
+(defun client-query-add (query)
   (client-request "add" `(("query" . ,query))))
 
 (defun client-next ()
