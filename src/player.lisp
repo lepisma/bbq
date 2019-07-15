@@ -124,12 +124,11 @@ can be queried."
 (defmethod reset ((p bbq-player))
   (setf (current-index p) nil
         (playlist p) nil
-        (should-play? p) nil))
+        (should-play? p) nil)
+  (mpv::stop (mp p)))
 
 (defmethod enqueue ((p bbq-player) songs)
-  (appendf (playlist p) songs)
-  (when (null (current-index p))
-    (setf (current-index p) 0)))
+  (appendf (playlist p) songs))
 
 (defmethod next ((p bbq-player))
   "Go to the next item and play."
@@ -150,8 +149,16 @@ can be queried."
     (play-current p)))
 
 (defmethod toggle ((p bbq-player))
-  (mpv::toggle (mp p))
-  (setf (should-play? p) (not (should-play? p))))
+  (if (and (playlist p)
+           (null (current-index p)))
+      ;; This means items have just been added after a reset
+      (progn
+        (setf (current-index p) 0)
+        (play-current p))
+      ;; Other just do regular toggling
+      (progn
+        (mpv::toggle (mp p))
+        (setf (should-play? p) (not (should-play? p))))))
 
 (defmethod state ((p bbq-player))
   "Return current state variables of the player. Mostly useful for outside
