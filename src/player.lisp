@@ -186,7 +186,9 @@ systems trying to interact."
   (let ((path (if (stringp route-args) (list route-args) route-args)))
     `(setf (ningle:route *app* ,@path)
            (lambda (params)
-             (respond-json (progn ,@body))))))
+             (respond-json (handler-case (progn ,@body)
+                             (player-empty (c)
+                               `((error . "player-empty")))))))))
 
 (r/ "/" :hello)
 
