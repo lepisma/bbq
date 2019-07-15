@@ -164,6 +164,24 @@ systems trying to interact."
         `(("vars" . ,vars) ("item" . nil))
         `(("vars" . ,vars) ("item" . ,(bbq-db::to-alist (current-song p) t))))))
 
+;;; Queries
+
+;; TODO: This primitive parsing is duplicate in cli file too. Should make
+;;       parsing go in one place.
+(defparameter *query-actions* '(:new :cap)
+  "Valid actions to pass in queries. Notice that at the moment, we allow actions
+  at the car of query. Finally, we will allowing proper pipelining.")
+
+(defun query (query-string)
+  "Run the query string and return a list of songs."
+  (let ((splits (split query-string)))
+    (if (and splits (starts-with (car splits) ":"))
+        (case (read-from-string (car splits))
+          (:new (bbq-element::new (parse-integer (second splits))))
+          (:cap (bbq-element::artist-cap (parse-integer (second splits)))))
+        ;; This is just plain old string search
+        (bbq-element::string-search query-string))))
+
 ;;; Server stuff
 (defparameter *player* nil
   "Global variable holding a player instance")
@@ -197,9 +215,8 @@ systems trying to interact."
     :ok)
 
 (r/ ("/add" :method :POST)
-    (let ((songs (bbq-element::string-search (request-get params "query"))))
-      (enqueue *player* songs)
-      :ok))
+    (enqueue *player* (query (request-get params "query")))
+    :ok)
 
 (r/ "/next"
     (next *player*)
