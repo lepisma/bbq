@@ -69,6 +69,11 @@
 (defmethod toggle ((mp mpv-player))
   (if (paused? mp) (play mp) (pause mp)))
 
+(defmethod stop ((mp mpv-player))
+  (with-foreign-object (args :string 1)
+    (setf (mem-aref args :string 0) "stop")
+    (mpv-command (handle mp) args)))
+
 (defmethod play-path ((mp mpv-player) path)
   (with-foreign-object (args :string 2)
     (setf (mem-aref args :string 0) "loadfile"
