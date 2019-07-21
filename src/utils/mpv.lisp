@@ -48,16 +48,18 @@
     mp))
 
 (defmethod duration ((mp mpv-player))
-  (parse-number:parse-positive-real-number
-   (mpv-get-property-string (handle mp) "duration")))
+  (let ((prop (mpv-get-property-string (handle mp) "duration")))
+    (when prop
+      (parse-number:parse-positive-real-number prop))))
 
 (defmethod time-pos ((mp mpv-player))
-  (parse-number:parse-positive-real-number
-   (mpv-get-property-string (handle mp) "time-pos")))
+  (let ((prop (mpv-get-property-string (handle mp) "time-pos")))
+    (when prop
+      (parse-number:parse-positive-real-number prop))))
 
 (defmethod paused? ((mp mpv-player))
-  ;; TODO: Need to handle cases where prop is nil
   (let ((prop (mpv-get-property-string (handle mp) "pause")))
+    ;; TODO: Need to handle cases where prop is nil
     (string= prop "yes")))
 
 (defmethod pause ((mp mpv-player))
@@ -83,7 +85,8 @@
 (defmethod played? ((mp mpv-player))
   "Tell if the current track is `played' according to last.fm's scrobbling
   definitions. NOTE: We don't consider null duration at the moment."
-  (> (time-pos mp) (min (* 4 60) (/ (duration mp) 2))))
+  (when (and (time-pos mp) (duration mp))
+    (> (time-pos mp) (min (* 4 60) (/ (duration mp) 2)))))
 
 (defmethod idle? ((mp mpv-player))
   (string= "yes" (mpv-get-property-string (handle mp) "idle-active")))

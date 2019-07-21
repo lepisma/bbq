@@ -39,6 +39,7 @@
       :components ((:file "core")
                    (:file "source")
                    (:file "filter")))
+     (:file "hooks")
      (:file "player")
      (:file "import")
      (:file "cli")))))

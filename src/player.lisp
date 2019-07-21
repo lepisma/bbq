@@ -126,7 +126,10 @@ can be queried."
   (let ((url (playback-url (current-song p))))
     (mpv::play-path (mp p) url)
     (setf (should-play? p) t
-          (played? p) nil)))
+          (played? p) nil)
+    ;; NOTE: We run song `change' hook here since any change triggers play also
+    ;;       for us and we don't allow just a change in current-index.
+    (bt:make-thread #'run-song-change-hook)))
 
 (defmethod reset ((p bbq-player))
   (setf (current-index p) nil
