@@ -3,19 +3,16 @@
 (in-package #:bbq-db)
 (cl-interpol:enable-interpol-syntax)
 
-(defvar *db* nil
-  "Connection to db")
-
-(defmacro with-db (&rest body)
-  `(with-open-database (*db* bbq-config:*db-path*)
+(defmacro with-db (var &rest body)
+  `(with-open-database (,var bbq-config:*db-path*)
      ,@body))
 
 (defun add-alist (table alist)
   "Add alist in the table."
-  (with-db
-      (let ((keys (cl-strings:join (mapcar #'car alist) :separator ", "))
-            (plcs (cl-strings:join (serapeum:repeat-sequence '("?") (length alist)) :separator ", ")))
-        (apply #'execute-non-query *db* #?"INSERT INTO ${table} (${keys}) VALUES (${plcs})" (mapcar #'cdr alist)))))
+  (with-db db
+    (let ((keys (cl-strings:join (mapcar #'car alist) :separator ", "))
+          (plcs (cl-strings:join (serapeum:repeat-sequence '("?") (length alist)) :separator ", ")))
+      (apply #'execute-non-query db #?"INSERT INTO ${table} (${keys}) VALUES (${plcs})" (mapcar #'cdr alist)))))
 
 (defun interleave (list1 list2 &optional acc)
   "Interleave two lists. Assume equal length."
@@ -46,8 +43,8 @@ export the `id' key."
 (defmethod present? ((s song))
   "Tell if the given song is present in the db."
   (if (and (song-artist s) (song-title s))
-      (with-db
-          (execute-to-list *db* "SELECT * FROM songs WHERE artist = ? AND title = ?" (song-artist s) (song-title s)))
+      (with-db db
+        (execute-to-list db "SELECT * FROM songs WHERE artist = ? AND title = ?" (song-artist s) (song-title s)))
       (error "song underspecified")))
 
 (defmethod add ((s song))
@@ -57,7 +54,7 @@ export the `id' key."
 
 (defun song-query (&optional (condition-str "") &rest condition-args)
   "Use condition query to return songs."
-  (with-db
-      (let* ((fields '(:id :artist :title :album :url :mtime))
-             (items (apply #'execute-to-list *db* #?"SELECT id, artist, title, album, url, mtime FROM songs ${condition-str}" condition-args)))
-        (mapcar (lambda (it) (apply #'make-song (interleave fields it))) items))))
+  (with-db db
+    (let* ((fields '(:id :artist :title :album :url :mtime))
+           (items (apply #'execute-to-list db #?"SELECT id, artist, title, album, url, mtime FROM songs ${condition-str}" condition-args)))
+      (mapcar (lambda (it) (apply #'make-song (interleave fields it))) items))))
