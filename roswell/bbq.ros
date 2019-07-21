@@ -18,7 +18,7 @@ exec ros -Q -- $0 "$@"
          (action (serapeum:assocadr :action pargs))
          (query (serapeum:assocadr :query pargs)))
     (cond
-      ((member :help options) (print (bbq::generate-help)))
+      ((member :help options) (princ (bbq::generate-help)))
       (action
        (case action
          (:serve (bbq::start-server))

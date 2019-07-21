@@ -222,8 +222,9 @@ systems trying to interact."
     :ok)
 
 (r/ ("/add" :method :POST)
-    (enqueue *player* (query (request-get params "query")))
-    :ok)
+    (let ((songs (query (request-get params "query"))))
+      (enqueue *player* songs)
+      (format nil "Added ~A song(s)" (length songs))))
 
 (r/ "/next"
     (next *player*)

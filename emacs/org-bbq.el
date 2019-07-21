@@ -66,7 +66,7 @@ https://github.com/lepisma/cfg/blob/master/scripts/bin/yts"
              </div>" (org-bbq--format-yt yid) title artist)))
 
 (defun org-bbq--get-items (path)
-  (read (shell-command-to-string (format "bbq --list --sexp %s" path))))
+  (read (shell-command-to-string (format "bbq --list %s" path))))
 
 (defun org-bbq-export (path desc backend)
   "Export list of items in the playlist"

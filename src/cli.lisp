@@ -3,12 +3,12 @@
 (in-package #:bbq)
 (cl-interpol:enable-interpol-syntax)
 
-(defparameter *cli-options* '(:list :help :sexp)
+(defparameter *cli-options* '(:list :help)
   "Options for cli. These are reflected in cli as --list, --help kind arguments
   anywhere in the list of all arguments provided. At the moment, we only support
   parameter less options.")
 
-(defparameter *cli-actions* '(:new :cap :toggle :cycle :state :prev :next :serve)
+(defparameter *cli-actions* '(:toggle :cycle :state :prev :next :serve)
   "List of valid actions. Actions in cli are present as the first argument along
   with the initial colon sign.")
 
@@ -62,4 +62,14 @@
     (:query ,(parse-query args))))
 
 (defun run (action query options)
-  (princ "Not implemented"))
+  "--help option and :serve action are already handled."
+  (if (member :list options)
+      ;; Thanks for separate namespaces
+      (print (mapcar (lambda (s) (bbq-db::to-alist s t)) (query query)))
+      (case action
+        (:toggle (princ (client-toggle)))
+        (:next (princ (client-next)))
+        (:prev (princ (client-prev)))
+        (:cycle (princ ":cycle not implemented yet. enjoy eternal loops."))
+        (:state (princ (client-request "state")))
+        (t (princ (client-query-add query))))))
