@@ -23,8 +23,6 @@
       acc
       (interleave (cdr list1) (cdr list2) (append acc (list (car list1) (car list2))))))
 
-
-
 (defstruct song
   id
   artist
