@@ -10,6 +10,14 @@
 (defpackage #:mpv
   (:use #:cl #:cffi))
 
+(defpackage #:bbq-config
+  (:use #:cl
+        #:cl-yaml
+        #:alexandria)
+  (:export *config*
+           *cache-dir*
+           *db-path*))
+
 (defpackage #:bbq-db
   (:use #:cl
         #:sqlite)

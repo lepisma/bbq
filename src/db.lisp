@@ -3,15 +3,11 @@
 (in-package #:bbq-db)
 (cl-interpol:enable-interpol-syntax)
 
-;; TODO: Rename path to bbq
-(defvar *db-path* (truename "~/.mpm.d/database")
-  "Path to mpm sqlite database")
-
 (defvar *db* nil
   "Connection to db")
 
 (defmacro with-db (&rest body)
-  `(with-open-database (*db* *db-path*)
+  `(with-open-database (*db* bbq-config:*db-path*)
      ,@body))
 
 (defun add-alist (table alist)

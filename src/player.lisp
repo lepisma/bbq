@@ -3,15 +3,10 @@
 (in-package #:bbq)
 (cl-interpol:enable-interpol-syntax)
 
-;;; Temporary playback source resolvers. Will get cleaned up after full
-;;; migration.
-
-(defvar *player-cache-dir* (truename "/run/media/lepisma/Data/Music/.cache.d"))
-
 (defmethod playback-url-local ((s bbq-db::song))
   "Return local url for playing given song. Right now, there is only cache which
 can be queried."
-  (let ((file-name (probe-file (join (list *player-cache-dir* (bbq-db::song-id s))))))
+  (let ((file-name (probe-file (join (list bbq-config:*cache-dir* (bbq-db::song-id s))))))
     (when file-name
       (format nil "~A" file-name))))
 
@@ -192,7 +187,7 @@ systems trying to interact."
 ;;; Server stuff
 (defparameter *player* nil
   "Global variable holding a player instance")
-(defparameter *port* 6672
+(defparameter *port* (gethash "port" bbq-config:*config*)
   "Port to listen at for the server")
 (defparameter *app* (make-instance 'ningle:<app>)
   "Ningle application")

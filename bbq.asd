@@ -30,7 +30,8 @@
     :depends-on ("package")
     :serial t
     :components
-    ((:module "utils" :components ((:file "mpv") (:file "yt")))
+    ((:file "config")
+     (:module "utils" :components ((:file "mpv") (:file "yt")))
      (:file "db")
      (:file "log")
      (:module "element"
