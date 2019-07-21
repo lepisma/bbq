@@ -17,3 +17,13 @@ CREATE TABLE play_log (
   song_id INTEGER NOT NULL,
   FOREIGN KEY(song_id) REFERENCES songs(id)
 );
+
+-- Log from Last.fm saved using dump https://benjaminbenben.com/lastfm-to-csv/
+-- This is not updated and only used for certain analyses
+CREATE TABLE lastfm_log (
+  id INTEGER PRIMARY KEY,
+  artist TEXT NOT NULL,
+  album TEXT,
+  title TEXT NOT NULL,
+  timestring TEXT NOT NULL
+);
