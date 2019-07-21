@@ -58,6 +58,9 @@ can be queried."
                 :documentation "Thread for polling")
    (alive? :accessor alive?
            :initform t)
+   (played? :accessor played?
+            :initform nil
+            :documentation "Tell if this song is (marked as) played.")
    (should-play? :accessor should-play?
                  :initform nil
                  :documentation "Internal flag for keeping track of things."))
@@ -95,6 +98,13 @@ can be queried."
   (need-songs p)
   (nth (current-index p) (playlist p)))
 
+(defmethod mark-played ((p bbq-player))
+  "Mark current song as played."
+  (unless (played? p)
+    (when (mpv::played? (mp p))
+      (setf (played? p) t)
+      (bbq-log::mark-played (current-song p)))))
+
 (defmethod poll-loop ((p bbq-player))
   "Loop for checking the player state and acting if needed."
   (loop
@@ -104,9 +114,10 @@ can be queried."
          (bt:with-lock-held ((lock p))
            (when (should-play? p)
              (cond
-               ((mpv::idle? (mp p)) (next p))))))))
+               ((mpv::idle? (mp p)) (next p))
+               ;; TODO: Do I need this?
                ;; ((paused? p) (toggle p))
-               ;; ((playing? p) (princ-to-string "TODO: call mark-played"))))))))
+               (t (mark-played p))))))))
 
 (defmethod play-current ((p bbq-player))
   "Play current item in playlist. We assume that index and playlist both are
@@ -114,12 +125,14 @@ can be queried."
   (need-songs p)
   (let ((url (playback-url (current-song p))))
     (mpv::play-path (mp p) url)
-    (setf (should-play? p) t)))
+    (setf (should-play? p) t
+          (played? p) nil)))
 
 (defmethod reset ((p bbq-player))
   (setf (current-index p) nil
         (playlist p) nil
-        (should-play? p) nil)
+        (should-play? p) nil
+        (played? p) nil)
   (mpv::stop (mp p)))
 
 (defmethod enqueue ((p bbq-player) songs)
@@ -150,7 +163,7 @@ can be queried."
       (progn
         (setf (current-index p) 0)
         (play-current p))
-      ;; Other just do regular toggling
+      ;; Otherwise just do regular toggling
       (progn
         (mpv::toggle (mp p))
         (setf (should-play? p) (not (should-play? p))))))

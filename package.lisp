@@ -35,6 +35,7 @@
 (defpackage #:bbq-log
   (:use #:cl
         #:cl-strings
+        #:sqlite
         #:trivia))
 
 (defpackage #:bbq-element

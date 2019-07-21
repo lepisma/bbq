@@ -1,6 +1,13 @@
 ;;;; Log parsing
 
 (in-package #:bbq-log)
+(cl-interpol:enable-interpol-syntax)
+
+(defmethod mark-played ((s bbq-db::song))
+  "Mark song as played using current timestamp in the database"
+  (let ((ts (serapeum:get-unix-time)))
+    (bbq-db:with-db db
+      (execute-non-query db "INSERT INTO play_log (time, song_id) VALUES (?, ?)" ts (bbq-db::song-id s)))))
 
 ;; (defvar *player-log* (truename "~/.mpm.d/play-log")
 ;;   "Log file of player.")
