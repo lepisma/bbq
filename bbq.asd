@@ -14,10 +14,12 @@
                #:cl-interpol
                #:cl-json
                #:cl-ppcre
+               #:cl-progress-bar
                #:cl-strings
                #:cl-yaml
                #:dexador
                #:inferior-shell
+               #:lastfm
                #:lquery
                #:ningle
                #:plump

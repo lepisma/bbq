@@ -58,3 +58,6 @@ export the `id' key."
     (let* ((fields '(:id :artist :title :album :url :mtime))
            (items (apply #'execute-to-list db #?"SELECT id, artist, title, album, url, mtime FROM songs ${condition-str}" condition-args)))
       (mapcar (lambda (it) (apply #'make-song (interleave fields it))) items))))
+
+(defun song-by-id (id)
+  (car (song-query #?"WHERE id = ${id}")))
