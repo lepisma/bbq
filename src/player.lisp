@@ -115,8 +115,7 @@ can be queried."
            (when (should-play? p)
              (cond
                ((mpv::idle? (mp p)) (next p))
-               ;; TODO: Do I need this?
-               ;; ((paused? p) (toggle p))
+               ((mpv::paused? (mp p)) (mpv::toggle (mp p)))
                (t (mark-played p))))))))
 
 (defmethod play-current ((p bbq-player))
