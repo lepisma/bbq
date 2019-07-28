@@ -55,7 +55,9 @@
 (defmethod time-pos ((mp mpv-player))
   (let ((prop (mpv-get-property-string (handle mp) "time-pos")))
     (when prop
-      (parse-number:parse-positive-real-number prop))))
+      ;; NOTE:This gives slightly negative numbers sometimes. Not sure why so
+      ;;      have a minor fix here.
+      (max 0 (parse-number:parse-real-number prop)))))
 
 (defmethod paused? ((mp mpv-player))
   (let ((prop (mpv-get-property-string (handle mp) "pause")))
