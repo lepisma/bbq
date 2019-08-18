@@ -56,7 +56,7 @@ export the `id' key."
   "Use condition query to return songs."
   (with-db db
     (let* ((fields '(:id :artist :title :album :url :mtime))
-           (items (apply #'execute-to-list db #?"SELECT id, artist, title, album, url, mtime FROM songs ${condition-str}" condition-args)))
+           (items (apply #'execute-to-list db #?"SELECT songs.id, songs.artist, songs.title, songs.album, songs.url, songs.mtime FROM songs ${condition-str}" condition-args)))
       (mapcar (lambda (it) (apply #'make-song (interleave fields it))) items))))
 
 (defun song-by-id (id)

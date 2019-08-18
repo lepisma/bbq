@@ -8,6 +8,10 @@
   "Return n new items."
   (bbq-db:song-query "ORDER BY mtime DESC LIMIT ?" n))
 
+(defsource newp (n)
+  "Return n recently played items."
+  (bbq-db:song-query "INNER JOIN play_log ON play_log.song_id = songs.id ORDER BY play_log.time DESC LIMIT ?" n))
+
 (defsource artist-cap (n)
   "Return items with artist counts <= n"
   (bbq-db:song-query "WHERE artist IN (SELECT artist FROM songs GROUP BY artist HAVING count(*) <= ?)" n))

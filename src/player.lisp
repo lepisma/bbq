@@ -185,7 +185,7 @@ systems trying to interact."
 
 ;; TODO: This primitive parsing is duplicate in cli file too. Should make
 ;;       parsing go in one place.
-(defparameter *query-actions* '(:new :cap)
+(defparameter *query-actions* '(:new :newp :cap)
   "Valid actions to pass in queries. Notice that at the moment, we allow actions
   at the car of query. Finally, we will allowing proper pipelining.")
 
@@ -195,6 +195,7 @@ systems trying to interact."
     (if (and splits (starts-with (car splits) ":"))
         (case (read-from-string (car splits))
           (:new (bbq-element::new (parse-integer (second splits))))
+          (:newp (bbq-element::newp (parse-integer (second splits))))
           (:cap (bbq-element::artist-cap (parse-integer (second splits)))))
         ;; This is just plain old string search
         (bbq-element::string-search query-string))))
