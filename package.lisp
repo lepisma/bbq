@@ -42,7 +42,8 @@
         #:trivia))
 
 (defpackage #:bbq-element
-  (:use #:cl)
+  (:use #:cl
+        #:cl-strings)
   (:export #:*elements*
            #:defelement
            #:defsource
