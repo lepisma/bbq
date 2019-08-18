@@ -41,6 +41,10 @@
       :components ((:file "core")
                    (:file "source")
                    (:file "filter")))
+     (:module "reco"
+      :serial t
+      :components ((:file "feats.lisp")
+                   (:file "model.lisp")))
      (:file "hooks")
      (:file "player")
      (:file "import")

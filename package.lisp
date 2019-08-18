@@ -32,6 +32,9 @@
            #:song-album
            #:song-query))
 
+(defpackage #:bbq-reco
+  (:use #:cl))
+
 (defpackage #:bbq-log
   (:use #:cl
         #:cl-strings
