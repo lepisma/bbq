@@ -43,8 +43,8 @@
                    (:file "filter")))
      (:module "reco"
       :serial t
-      :components ((:file "feats.lisp")
-                   (:file "model.lisp")))
+      :components ((:file "feats")
+                   (:file "model")))
      (:file "hooks")
      (:file "player")
      (:file "import")
