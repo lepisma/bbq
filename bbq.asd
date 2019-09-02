@@ -1,6 +1,7 @@
 ;;;; bbq.asd
 
 (defsystem #:bbq
+  :version "0.1.0"
   :description "Music player"
   :author "Abhinav Tushar <lepisma@fastmail.com>"
   :license "GPLv3"
