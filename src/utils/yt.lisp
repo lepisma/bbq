@@ -4,7 +4,7 @@
 (defparameter *ytdl-bin* "~/.pyenv/shims/youtube-dl"
   "Path to ytdl. I shouldn't be needing to specify this to be honest.")
 
-(defun url-id (url)
+(defun url-to-id (url)
   "Return 11 char youtube identifier. From https://gist.github.com/takien/4077195"
   (let* ((url (ppcre:regex-replace-all "(>|<)" url ""))
          (splits (ppcre:split "(vi\/|v%3D|v=|\/v\/|youtu\.be\/|\/embed\/)" url)))
@@ -46,4 +46,4 @@ https://github.com/lepisma/cfg/blob/master/scripts/bin/yts"
                            (cons page-title page-title))))
     `(:artist ,(car artist-title)
       :title ,(cdr artist-title)
-      :url ,#?"yt:${(url-id url)}")))
+      :url ,#?"yt:${(url-to-id url)}")))
