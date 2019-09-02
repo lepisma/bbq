@@ -64,7 +64,7 @@
 (defun run (action query options)
   "--help option and :serve action are already handled."
   (if (member :list options)
-      ;; Thanks for separate namespaces
+      ;; Thanks to separate namespaces
       (print (mapcar (lambda (s) (bbq-db:to-alist s t)) (query query)))
       (case action
         (:toggle (princ (client-toggle)))
