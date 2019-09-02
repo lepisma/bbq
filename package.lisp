@@ -7,7 +7,8 @@
            #:url-valid?
            #:text-search
            #:url-audio-stream
-           #:id-to-url))
+           #:id-to-url
+           #:url-to-id))
 
 (defpackage #:mpv
   (:use #:cl #:cffi)

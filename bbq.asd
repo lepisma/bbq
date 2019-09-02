@@ -27,6 +27,7 @@
                #:serapeum
                #:sqlite
                #:trivia)
+  :in-order-to ((test-op (test-op bbq-test)))
   :components
   ((:file "package")
    (:module "src"
@@ -52,3 +53,10 @@
      (:file "client")
      (:file "import")
      (:file "cli")))))
+
+(defsystem bbq-test
+  :depends-on (#:bbq #:prove)
+  :defsystem-depends-on (#:prove-asdf)
+  :components
+  ((:test-file "tests"))
+  :perform (test-op :after (op c) (funcall (intern #.(string :run) :prove) c)))
