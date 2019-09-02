@@ -56,6 +56,15 @@ export the `id' key."
 (defun song-by-id (id)
   (car (song-query #?"WHERE id = ${id}")))
 
+(defmethod cache-song ((s song) stream-url)
+  "Cache song by starting download. This will be using a queue later."
+  (let* ((file-name (cl-strings:join (list bbq-config:*cache-dir* (song-id s))))
+         (tmp-file-name #?"${file-name}.tmp"))
+    ;; Temporary file is a kind of lock for now
+    (unless (probe-file tmp-file-name)
+      (inferior-shell:run/s (list 'wget "-O" tmp-file-name stream-url))
+      (inferior-shell:run/s (list 'mv tmp-file-name file-name)))))
+
 (defmethod playback-url-local ((s song))
   "Return local url for playing given song. Right now, there is only cache which
 can be queried."
@@ -67,12 +76,16 @@ can be queried."
   "Return stream url using youtube url for the item"
   (let ((components (cl-strings:split (song-url s) ":")))
     (when (string= "yt" (car components))
-      (yt:url-audio-stream (yt:id-to-url (second components))))))
+      (let ((stream-url (yt:url-audio-stream (yt:id-to-url (second components)))))
+        (bt:make-thread (lambda () (cache-song s stream-url)) :name #?"bbq-download-yt (${(song-id s)})")
+        stream-url))))
 
 (defmethod playback-url-yt-search ((s song))
   "Return stream url using youtube search."
-  (let ((search-string (format nil "~A ~A" (song-artist s) (song-title s))))
-    (yt:url-audio-stream (car (yt:text-search search-string)))))
+  (let* ((search-string (format nil "~A ~A" (song-artist s) (song-title s)))
+         (stream-url (yt:url-audio-stream (car (yt:text-search search-string)))))
+    (bt:make-thread (lambda () (cache-song s stream-url)) :name #?"bbq-download-yt-search (${(song-id s)})")
+    stream-url))
 
 (defmethod playback-url ((s song))
   "Return a playback url for given song"
