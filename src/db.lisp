@@ -59,13 +59,13 @@ export the `id' key."
 (defmethod playback-url-local ((s song))
   "Return local url for playing given song. Right now, there is only cache which
 can be queried."
-  (let ((file-name (probe-file (join (list bbq-config:*cache-dir* (song-id s))))))
+  (let ((file-name (probe-file (cl-strings:join (list bbq-config:*cache-dir* (song-id s))))))
     (when file-name
       (format nil "~A" file-name))))
 
 (defmethod playback-url-yt ((s song))
   "Return stream url using youtube url for the item"
-  (let ((components (split (song-url s) ":")))
+  (let ((components (cl-strings:split (song-url s) ":")))
     (when (string= "yt" (car components))
       (yt:url-audio-stream (yt:id-to-url (second components))))))
 
