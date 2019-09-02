@@ -3,32 +3,6 @@
 (in-package #:bbq)
 (cl-interpol:enable-interpol-syntax)
 
-(defmethod playback-url-local ((s bbq-db::song))
-  "Return local url for playing given song. Right now, there is only cache which
-can be queried."
-  (let ((file-name (probe-file (join (list bbq-config:*cache-dir* (bbq-db::song-id s))))))
-    (when file-name
-      (format nil "~A" file-name))))
-
-(defmethod playback-url-yt ((s bbq-db::song))
-  "Return stream url using youtube url for the item"
-  (let ((components (split (bbq-db:song-url s) ":")))
-    (when (string= "yt" (car components))
-      (yt::url-audio-stream (yt::id-to-url (second components))))))
-
-(defmethod playback-url-yt-search ((s bbq-db::song))
-  "Return stream url using youtube search."
-  (let ((search-string (format nil "~A ~A" (bbq-db:song-artist s) (bbq-db:song-title s))))
-    (yt::url-audio-stream (car (yt::text-search search-string)))))
-
-(defmethod playback-url ((s bbq-db::song))
-  "Return a playback url for given song"
-  (or (playback-url-local s)
-      (playback-url-yt s)
-      (playback-url-yt-search s)))
-
-;;; Player abstraction
-
 (defclass bbq-player ()
   ((playlist :accessor playlist
              :initarg :playlist
@@ -69,14 +43,14 @@ can be queried."
   just trying to copy its behavior instead of acting more correctly."))
 
 (defun make-bbq-player ()
-  (let ((player (make-instance 'bbq-player :mp (mpv::make-mpv-player))))
+  (let ((player (make-instance 'bbq-player :mp (mpv:make-mpv-player))))
     (setf (poll-thread player) (bt:make-thread (lambda () (poll-loop player)) :name "bbq-player-poll"))
     player))
 
 (defmethod shutdown ((p bbq-player))
   (setf (alive? p) nil)
   (bt:join-thread (poll-thread p))
-  (mpv::shutdown (mp p)))
+  (mpv:shutdown (mp p)))
 
 (define-condition player-empty (error) ()
   (:report (lambda (condition stream)
@@ -101,9 +75,9 @@ can be queried."
 (defmethod mark-played ((p bbq-player))
   "Mark current song as played."
   (unless (played? p)
-    (when (mpv::played? (mp p))
+    (when (mpv:played? (mp p))
       (setf (played? p) t)
-      (bbq-log::mark-played (current-song p)))))
+      (bbq-log:mark-played (current-song p)))))
 
 (defmethod poll-loop ((p bbq-player))
   "Loop for checking the player state and acting if needed."
@@ -114,16 +88,16 @@ can be queried."
          (bt:with-lock-held ((lock p))
            (when (should-play? p)
              (cond
-               ((mpv::idle? (mp p)) (next p))
-               ((mpv::paused? (mp p)) (mpv::toggle (mp p)))
+               ((mpv:idle? (mp p)) (next p))
+               ((mpv:paused? (mp p)) (mpv:toggle (mp p)))
                (t (mark-played p))))))))
 
 (defmethod play-current ((p bbq-player))
   "Play current item in playlist. We assume that index and playlist both are
   valid."
   (need-songs p)
-  (let ((url (playback-url (current-song p))))
-    (mpv::play-path (mp p) url)
+  (let ((url (bbq-db:playback-url (current-song p))))
+    (mpv:play-path (mp p) url)
     (setf (should-play? p) t
           (played? p) nil)
     ;; NOTE: We run song `change' hook here since any change triggers play also
@@ -135,7 +109,7 @@ can be queried."
         (playlist p) nil
         (should-play? p) nil
         (played? p) nil)
-  (mpv::stop (mp p)))
+  (mpv:stop (mp p)))
 
 (defmethod enqueue ((p bbq-player) songs)
   (appendf (playlist p) songs))
@@ -167,7 +141,7 @@ can be queried."
         (play-current p))
       ;; Otherwise just do regular toggling
       (progn
-        (mpv::toggle (mp p))
+        (mpv:toggle (mp p))
         (setf (should-play? p) (not (should-play? p))))))
 
 (defmethod state ((p bbq-player))
@@ -179,106 +153,4 @@ systems trying to interact."
                 ("current" . ,(current-index p)))))
     (if (empty? p)
         `(("vars" . ,vars) ("item" . nil))
-        `(("vars" . ,vars) ("item" . ,(bbq-db::to-alist (current-song p) t))))))
-
-;;; Queries
-
-;; TODO: This primitive parsing is duplicate in cli file too. Should make
-;;       parsing go in one place.
-(defparameter *query-actions* '(:new :newp :cap)
-  "Valid actions to pass in queries. Notice that at the moment, we allow actions
-  at the car of query. Finally, we will allowing proper pipelining.")
-
-(defun query (query-string)
-  "Run the query string and return a list of songs."
-  (let ((splits (split query-string)))
-    (if (and splits (starts-with (car splits) ":"))
-        (case (read-from-string (car splits))
-          (:new (bbq-element::new (parse-integer (second splits))))
-          (:newp (bbq-element::newp (parse-integer (second splits))))
-          (:cap (bbq-element::artist-cap (parse-integer (second splits)))))
-        ;; This is just plain old string search
-        (bbq-element::string-search query-string))))
-
-;;; Server stuff
-(defparameter *player* nil
-  "Global variable holding a player instance")
-(defparameter *port* (gethash "port" bbq-config:*config*)
-  "Port to listen at for the server")
-(defparameter *app* (make-instance 'ningle:<app>)
-  "Ningle application")
-(defparameter *clack-server* nil
-  "Variable holding clack server for graceful shutdowns etc.")
-
-(defun respond-json (content)
-  (appendf (lack.response:response-headers ningle:*response*)
-           '("Content-Type" "application/json"))
-  (cl-json:encode-json-to-string content))
-
-(defun request-get (params key)
-  (serapeum:assocdr key params :test #'string=))
-
-(defmacro r/ (route-args &rest body)
-  (let ((path (if (stringp route-args) (list route-args) route-args)))
-    `(setf (ningle:route *app* ,@path)
-           (lambda (params)
-             (respond-json (handler-case (progn ,@body)
-                             (player-empty (c)
-                               `((error . "player-empty")))))))))
-
-(r/ "/" :hello)
-
-(r/ "/clear"
-    (reset *player*)
-    :ok)
-
-(r/ ("/add" :method :POST)
-    (let ((songs (query (request-get params "query"))))
-      (enqueue *player* songs)
-      (format nil "Added ~A song(s)" (length songs))))
-
-(r/ "/next"
-    (next *player*)
-    :ok)
-
-(r/ "/prev"
-    (prev *player*)
-    :ok)
-
-(r/ "/toggle"
-    (toggle *player*)
-    :ok)
-
-(r/ "/state"
-    (state *player*))
-
-(defun start-server (&optional background)
-  (setf *player* (make-bbq-player))
-  (setf *clack-server* (clack:clackup *app* :port *port* :use-thread background)))
-
-(defun stop-server ()
-  (clack:stop *clack-server*)
-  (shutdown *player*)
-  (setf *player* nil
-        *clack-server* nil))
-
-;;; Client functions
-(defun client-request (route &optional json-post-data)
-  "Send request to mpm-play"
-  (let ((base-url #?"http://localhost:${*port*}/${route}"))
-    (if json-post-data
-        (dex:post base-url :content (cl-json:encode-json-to-string json-post-data)
-                  :headers '(("Content-Type" . "application/json")))
-        (dex:get base-url))))
-
-(defun client-query-add (query)
-  (client-request "add" `(("query" . ,query))))
-
-(defun client-next ()
-  (client-request "next"))
-
-(defun client-prev ()
-  (client-request "prev"))
-
-(defun client-toggle ()
-  (client-request "toggle"))
+        `(("vars" . ,vars) ("item" . ,(bbq-db:to-alist (current-song p) t))))))

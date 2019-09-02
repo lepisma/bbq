@@ -5,10 +5,24 @@
         #:cl-strings)
   (:export #:url-metadata
            #:url-valid?
-           #:text-search))
+           #:text-search
+           #:url-audio-stream
+           #:id-to-url))
 
 (defpackage #:mpv
-  (:use #:cl #:cffi))
+  (:use #:cl #:cffi)
+  (:export #:make-mpv-player
+           #:shutdown
+           #:played?
+           #:idle?
+           #:paused?
+           #:toggle
+           #:play-path
+           #:stop))
+
+(defpackage #:bbq-utils
+  (:use #:cl)
+  (:export #:interleave))
 
 (defpackage #:bbq-config
   (:use #:cl
@@ -16,7 +30,8 @@
         #:alexandria)
   (:export *config*
            *cache-dir*
-           *db-path*))
+           *db-path*
+           *config-dir*))
 
 (defpackage #:bbq-db
   (:use #:cl
@@ -25,12 +40,17 @@
            #:make-song
            #:add
            #:present?
+           #:song
            #:song-artist
            #:song-title
            #:song-url
            #:song-mtime
            #:song-album
-           #:song-query))
+           #:song-id
+           #:song-query
+           #:song-by-id
+           #:to-alist
+           #:playback-url))
 
 (defpackage #:bbq-reco
   (:use #:cl))
@@ -39,15 +59,9 @@
   (:use #:cl
         #:cl-strings
         #:sqlite
-        #:trivia))
-
-(defpackage #:bbq-element
-  (:use #:cl
-        #:cl-strings)
-  (:export #:*elements*
-           #:defelement
-           #:defsource
-           #:deffilter))
+        #:trivia)
+  (:export #:mark-played
+           #:scrobble))
 
 (defpackage #:bbq-import
   (:use #:cl)
@@ -63,4 +77,13 @@
   (:shadowing-import-from #:cl-strings
    :starts-with :ends-with :parse-number :split)
   (:shadowing-import-from #:cl-arrows
-   :->))
+   :->)
+  (:export #:start-server
+           #:stop-server
+           #:client-query-add
+           #:client-next
+           #:client-prev
+           #:client-toggle
+           #:run
+           #:parse-args
+           #:generate-help))

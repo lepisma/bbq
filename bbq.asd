@@ -33,19 +33,21 @@
     :serial t
     :components
     ((:file "config")
-     (:module "utils" :components ((:file "mpv") (:file "yt")))
+     (:module "utils"
+      :serial t
+      :components ((:file "general")
+                   (:file "mpv")
+                   (:file "yt")))
      (:file "db")
      (:file "log")
-     (:module "element"
-      :serial t
-      :components ((:file "core")
-                   (:file "source")
-                   (:file "filter")))
+     (:file "query")
      (:module "reco"
       :serial t
       :components ((:file "feats")
                    (:file "model")))
      (:file "hooks")
      (:file "player")
+     (:file "server")
+     (:file "client")
      (:file "import")
      (:file "cli")))))

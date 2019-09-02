@@ -3,7 +3,7 @@
 (in-package #:bbq-log)
 (cl-interpol:enable-interpol-syntax)
 
-(defparameter *scrobbled-at-file* (merge-pathnames "scrobbled-at" bbq-config::*config-dir*)
+(defparameter *scrobbled-at-file* (merge-pathnames "scrobbled-at" bbq-config:*config-dir*)
   "File to keep last scrobbling time.")
 
 (defun scrobbled-at ()
@@ -15,18 +15,18 @@
             (parse-number:parse-number text)))
       0))
 
-(defmethod mark-played ((s bbq-db::song))
+(defmethod mark-played ((s bbq-db:song))
   "Mark song as played using current timestamp in the database"
   (let ((ts (serapeum:get-unix-time)))
     (bbq-db:with-db db
-      (execute-non-query db "INSERT INTO play_log (time, song_id) VALUES (?, ?)" ts (bbq-db::song-id s)))))
+      (execute-non-query db "INSERT INTO play_log (time, song_id) VALUES (?, ?)" ts (bbq-db:song-id s)))))
 
 (defun items-to-scrobble ()
   "Return a list of songs to scrobble."
   (let* ((last-scrobble-time (scrobbled-at))
          (rows (bbq-db:with-db db
                  (execute-to-list db "SELECT time, song_id FROM play_log WHERE time >= ?" last-scrobble-time))))
-    (mapcar (lambda (row) (cons (car row) (bbq-db::song-by-id (cdr row)))) rows)))
+    (mapcar (lambda (row) (cons (car row) (bbq-db:song-by-id (cdr row)))) rows)))
 
 (defun update-scrobbled-at-file ()
   (let ((ts (serapeum:get-unix-time)))

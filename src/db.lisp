@@ -14,12 +14,6 @@
           (plcs (cl-strings:join (serapeum:repeat-sequence '("?") (length alist)) :separator ", ")))
       (apply #'execute-non-query db #?"INSERT INTO ${table} (${keys}) VALUES (${plcs})" (mapcar #'cdr alist)))))
 
-(defun interleave (list1 list2 &optional acc)
-  "Interleave two lists. Assume equal length."
-  (if (or (null list1) (null list2))
-      acc
-      (interleave (cdr list1) (cdr list2) (append acc (list (car list1) (car list2))))))
-
 (defstruct song
   id
   artist
@@ -57,7 +51,31 @@ export the `id' key."
   (with-db db
     (let* ((fields '(:id :artist :title :album :url :mtime))
            (items (apply #'execute-to-list db #?"SELECT songs.id, songs.artist, songs.title, songs.album, songs.url, songs.mtime FROM songs ${condition-str}" condition-args)))
-      (mapcar (lambda (it) (apply #'make-song (interleave fields it))) items))))
+      (mapcar (lambda (it) (apply #'make-song (bbq-utils:interleave fields it))) items))))
 
 (defun song-by-id (id)
   (car (song-query #?"WHERE id = ${id}")))
+
+(defmethod playback-url-local ((s song))
+  "Return local url for playing given song. Right now, there is only cache which
+can be queried."
+  (let ((file-name (probe-file (join (list bbq-config:*cache-dir* (song-id s))))))
+    (when file-name
+      (format nil "~A" file-name))))
+
+(defmethod playback-url-yt ((s song))
+  "Return stream url using youtube url for the item"
+  (let ((components (split (song-url s) ":")))
+    (when (string= "yt" (car components))
+      (yt:url-audio-stream (yt:id-to-url (second components))))))
+
+(defmethod playback-url-yt-search ((s song))
+  "Return stream url using youtube search."
+  (let ((search-string (format nil "~A ~A" (song-artist s) (song-title s))))
+    (yt:url-audio-stream (car (yt:text-search search-string)))))
+
+(defmethod playback-url ((s song))
+  "Return a playback url for given song"
+  (or (playback-url-local s)
+      (playback-url-yt s)
+      (playback-url-yt-search s)))

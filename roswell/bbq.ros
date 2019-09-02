@@ -13,14 +13,14 @@ exec ros -Q -- $0 "$@"
 
 (defun main (&rest args)
   (setf *random-state* (make-random-state t))
-  (let* ((pargs (bbq::parse-args args))
+  (let* ((pargs (bbq:parse-args args))
          (options (serapeum:assocadr :options pargs))
          (action (serapeum:assocadr :action pargs))
          (query (serapeum:assocadr :query pargs)))
     (cond
-      ((member :help options) (princ (bbq::generate-help)))
+      ((member :help options) (princ (bbq:generate-help)))
       (action
        (case action
-         (:serve (bbq::start-server))
-         (t (bbq::run action query options))))
-      (t (bbq::run action query options)))))
+         (:serve (bbq:start-server))
+         (t (bbq:run action query options))))
+      (t (bbq:run action query options)))))
