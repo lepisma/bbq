@@ -5,7 +5,7 @@
 
 ;; TODO: This primitive parsing is duplicate in cli file too. Should make
 ;;       parsing go in one place.
-(defparameter *query-actions* '(:new :newp :null :cap :shuf)
+(defparameter *query-actions* '(:new :newp :oldp :cap :shuf)
   "Valid actions to pass in queries. Notice that at the moment, we allow actions
   at the car of query. Finally, we will allowing proper pipelining.")
 
@@ -20,6 +20,10 @@
 (defun get-newp (n)
   "Return n recently played items."
   (bbq-db:song-query "INNER JOIN play_log ON play_log.song_id = songs.id ORDER BY play_log.time DESC LIMIT ?" n))
+
+(defun get-oldp (n)
+  "Return n oldest played items."
+  (bbq-db:song-query "INNER JOIN play_log ON play_log.song_id = songs.id ORDER BY play_log.time LIMIT ?" n))
 
 (defun get-artist-cap (n)
   "Return items with artist counts <= n"
