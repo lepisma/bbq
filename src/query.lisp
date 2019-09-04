@@ -48,6 +48,7 @@
         (case (read-from-string (car splits))
           (:new (lambda () (get-new (parse-integer (second splits)))))
           (:newp (lambda () (get-newp (parse-integer (second splits)))))
+          (:oldp (lambda () (get-oldp (parse-integer (second splits)))))
           (:cap (lambda () (get-artist-cap (parse-integer (second splits)))))
           ;; TODO: Should continue with a new source specification after asking
           ;;       the user
