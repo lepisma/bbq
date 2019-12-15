@@ -42,15 +42,19 @@ a default clip on number of items."
          (cmd-out (inferior-shell:run/ss cmd)))
     (cl-json:decode-json-from-string cmd-out)))
 
+(defun parse-page-title (page-title)
+  "Run a rough heuristic to get artist and title pair from page title."
+  (let ((splits (mapcar #'clean (butlast (split page-title #\-)))))
+    (if (= (length splits) 2)
+        ;; This is probably artist - title pair
+        (apply #'cons splits)
+        ;; Let the user decide
+        (cons page-title page-title))))
+
 (defun url-metadata (url)
   "Return metadata for the song."
   (let* ((page-title (url-title url))
-         (splits (mapcar #'clean (butlast (split page-title #\-))))
-         (artist-title (if (= (length splits) 2)
-                           ;; This is probably artist - title pair
-                           (apply #'cons splits)
-                           ;; Let the user decide
-                           (cons page-title page-title))))
+         (artist-title (parse-page-title page-title)))
     `(:artist ,(car artist-title)
       :title ,(cdr artist-title)
       :url ,#?"yt:${(url-to-id url)}")))
