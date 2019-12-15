@@ -41,7 +41,7 @@
 
 (defun from-yt-playlist-interactive (playlist-url &optional (max-n 50))
   (let ((items (yt::format-playlist-data (yt::parse-playlist playlist-url max-n))))
-    `(mapcar #'from-plists ,items)))
+    `(from-plists ',items)))
 
 ;; NOTE: Do C-u (slime-eval-last-expression) on something like the following
 ;; (from-yt-playlist-interactive "https://www.youtube.com/watch?v=DcVDql7ctHo&list=OLAK5uy_lgOMUXKSrNLUTV_5u-Rn7i5ULsEpaq8p4")
