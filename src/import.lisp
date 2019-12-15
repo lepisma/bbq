@@ -38,3 +38,13 @@
     (if (bbq-db:present? s)
         (error #?"song ${s} already present")
         (bbq-db:add s))))
+
+(defun from-plists (items)
+  "From list of plist items. Mostly used for bulk importing after correction in
+a temporary buffer."
+  (let ((songs (mapcar (lambda (it) (apply #'bbq-db:make-song it)) items)))
+    (loop for s in songs
+          if (bbq-db:present? s)
+            do (print #?"song ${s} already present")
+          else
+            do (bbq-db:add s))))
