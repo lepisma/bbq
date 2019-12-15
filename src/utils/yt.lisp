@@ -35,6 +35,13 @@ https://github.com/lepisma/cfg/blob/master/scripts/bin/yts"
   "Return best audio stream url for given youtube-url"
   (inferior-shell:run/ss `(,(pathname *ytdl-bin*) ,url -g -x --audio-format best)))
 
+(defun parse-playlist (url &optional (max-n 50))
+  "Parse a complete playlist. Note that this could take long time so we provide
+a default clip on number of items."
+  (let* ((cmd `(,(pathname *ytdl-bin*) ,url --yes-playlist --dump-single-json --playlist-end ,max-n))
+         (cmd-out (inferior-shell:run/ss cmd)))
+    (cl-json:decode-json-from-string cmd-out)))
+
 (defun url-metadata (url)
   "Return metadata for the song."
   (let* ((page-title (url-title url))
