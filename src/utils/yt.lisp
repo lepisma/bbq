@@ -42,9 +42,14 @@ a default clip on number of items."
          (cmd-out (inferior-shell:run/ss cmd)))
     (cl-json:decode-json-from-string cmd-out)))
 
+(defun normalize-dash (text)
+  "Replace variations of dash with the canonical - in given text."
+  (let ((variations (list "‒" "–" "—" "―")))
+    (reduce (lambda (acc it) (cl-strings:replace-all acc it "-")) variations :initial-value text)))
+
 (defun parse-page-title (page-title)
   "Run a rough heuristic to get artist and title pair from page title."
-  (let ((splits (mapcar #'clean (butlast (split page-title #\-)))))
+  (let ((splits (mapcar #'clean (split (normalize-dash page-title) #\-))))
     (if (= (length splits) 2)
         ;; This is probably artist - title pair
         (apply #'cons splits)
