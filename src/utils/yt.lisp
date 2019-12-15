@@ -56,6 +56,16 @@ a default clip on number of items."
         ;; Let the user decide
         (cons page-title page-title))))
 
+(defun format-playlist-data (playlist-data)
+  "Format data collected from parse-playlist for correction and further import."
+  (mapcar (lambda (it)
+            (let ((artist-title (parse-page-title (cdr (assoc :title it))))
+                  (id (cdr (assoc :id it))))
+              `(:artist ,(car artist-title)
+                :title ,(cdr artist-title)
+                :url ,#?"yt:${id}")))
+          (cdr (assoc :entries playlist-data))))
+
 (defun url-metadata (url)
   "Return metadata for the song."
   (let* ((page-title (url-title url))
