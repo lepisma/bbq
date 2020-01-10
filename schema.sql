@@ -18,6 +18,12 @@ CREATE TABLE play_log (
   FOREIGN KEY(song_id) REFERENCES songs(id)
 );
 
+-- List of tags from Last.fm. We are assuming that tags have same namespace.
+CREATE TABLE lastfm_tags (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
 -- Log from Last.fm saved using dump https://benjaminbenben.com/lastfm-to-csv/
 -- This is not updated and only used for certain analyses
 CREATE TABLE lastfm_log (
